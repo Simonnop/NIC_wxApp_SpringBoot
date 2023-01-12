@@ -1,20 +1,18 @@
 package group.su.service.impl;
 
 import com.mongodb.client.FindIterable;
-import group.su.dao.ConfigDao;
-import group.su.dao.LessonDao;
-import group.su.dao.MissionDao;
-import group.su.dao.UserDao;
+import group.su.dao.*;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
 import group.su.service.helper.MissionHelper;
-import group.su.service.util.TimeUtil;
+import group.su.service.helper.TimeHelper;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,15 +25,23 @@ public class ManagerServiceImpl implements ManagerService {
     final ConfigDao configDao;
     final LessonDao lessonDao;
     final MissionHelper missionManager;
+    final TimeHelper timeHelper;
+
+    @Autowired
+    UserDaoTest userDaoTest;
+
+    @Autowired
+    MissionDaoTest missionDaoTest;
 
     @Autowired
     public ManagerServiceImpl(UserDao userDao, MissionDao missionDao, ConfigDao configDao,
-                           LessonDao lessonDao, MissionHelper missionManager) {
+                              LessonDao lessonDao, MissionHelper missionManager, TimeHelper timeHelper) {
         this.userDao = userDao;
         this.missionDao = missionDao;
         this.configDao = configDao;
         this.lessonDao = lessonDao;
         this.missionManager = missionManager;
+        this.timeHelper = timeHelper;
     }
 
     @Override
@@ -43,9 +49,7 @@ public class ManagerServiceImpl implements ManagerService {
         // 初始化任务id与状态
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
-        statusChanger.put("发布任务", (String) userDao
-                        .searchUserByInputEqual("userid", userid).first()
-                        .get("username"));
+        statusChanger.put("发布任务", userDaoTest.findByUserid(userid).getUsername());
         mission.setStatusChanger(statusChanger);
         // 添加任务
         missionDao.addMission(mission);
@@ -53,6 +57,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public ArrayList<Document> showMissionGotDraft() {
+
 
         FindIterable<Document> documents = missionDao.showAll();
         if (documents.first() == null) {
@@ -81,9 +86,9 @@ public class ManagerServiceImpl implements ManagerService {
         Map<String, Integer> time = (Map<String, Integer>) mission.get("time");
 
         // 查询第几周星期几
-        Integer[] weekDayByTime = TimeUtil.getWeekDayByTime(time);
+        Integer[] weekDayByTime = timeHelper.getWeekDayByTime(time);
         // 查询夏令时或冬令时
-        String season = TimeUtil.getSeason(weekDayByTime[0]);
+        String season = timeHelper.getSeason(weekDayByTime[0]);
         // 拿时间表
         Document timetable = configDao.showItemByInput("item", "timetable").first();
 
@@ -110,13 +115,13 @@ public class ManagerServiceImpl implements ManagerService {
                     // 从时间表拿对应课的时间
                     Document singleLesson = timetable.getList(season, Document.class).get(i - 1);
                     // 获取开始时间(时+分)
-                    int[] classStartTime = TimeUtil.changeTimeToInts(
+                    int[] classStartTime = timeHelper.changeTimeToInts(
                             singleLesson.get("startTime", String.class));
                     // 获取结束时间(时+分)
-                    int[] classEndTime = TimeUtil.changeTimeToInts(
+                    int[] classEndTime = timeHelper.changeTimeToInts(
                             singleLesson.get("endTime", String.class));
                     // 判断与任务时间是否冲突
-                    boolean checkAvailable = TimeUtil.checkAvailable(
+                    boolean checkAvailable = timeHelper.checkAvailable(
                             new int[]{time.get("beginHour"), time.get("beginMinute")},
                             new int[]{time.get("endHour"), time.get("endMinute")},
                             classStartTime, classEndTime

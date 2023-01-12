@@ -5,16 +5,11 @@ import group.su.dao.ConfigDao;
 import group.su.dao.LessonDao;
 import group.su.dao.MissionDao;
 import group.su.dao.UserDao;
-import group.su.dao.impl.ConfigDaoImpl;
-import group.su.dao.impl.LessonDaoImpl;
-import group.su.dao.impl.MissionDaoImpl;
-import group.su.dao.impl.UserDaoImpl;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
 import group.su.service.UserService;
 import group.su.service.helper.MissionHelper;
-import group.su.service.util.TimeUtil;
-import org.apache.commons.fileupload.FileItem;
+import group.su.service.helper.TimeHelper;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +20,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -35,15 +29,17 @@ public class UserServiceImpl implements UserService {
     final ConfigDao configDao;
     final LessonDao lessonDao;
     final MissionHelper missionManager;
+    final TimeHelper timeHelper;
 
     @Autowired
     public UserServiceImpl(UserDao userDao, MissionDao missionDao, ConfigDao configDao,
-                           LessonDao lessonDao, MissionHelper missionManager) {
+                           LessonDao lessonDao, MissionHelper missionManager,TimeHelper timeHelper) {
         this.userDao = userDao;
         this.missionDao = missionDao;
         this.configDao = configDao;
         this.lessonDao = lessonDao;
         this.missionManager = missionManager;
+        this.timeHelper = timeHelper;
     }
 
     @Override
@@ -220,7 +216,7 @@ public class UserServiceImpl implements UserService {
         ArrayList<Document> documents = lessonDao.showLessonsByInput("userid", userid);
 
         for (Document document : documents) {
-            document.put("season", TimeUtil.getSeason((Integer) document.get("week")));
+            document.put("season", timeHelper.getSeason((Integer) document.get("week")));
         }
 
         return documents;

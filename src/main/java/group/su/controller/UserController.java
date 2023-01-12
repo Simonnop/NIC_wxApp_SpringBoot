@@ -6,7 +6,7 @@ import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
 import group.su.service.helper.UserHelper;
 import group.su.service.impl.UserServiceImpl;
-import group.su.service.util.TimeUtil;
+import group.su.service.helper.TimeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,11 +19,13 @@ import java.io.UnsupportedEncodingException;
 public class UserController {
     private final UserServiceImpl userService;
     private final UserHelper userHelper;
+    private final TimeHelper timeHelper;
 
     @Autowired
-    public UserController(UserServiceImpl userService,UserHelper userHelper) {
+    public UserController(UserServiceImpl userService,UserHelper userHelper,TimeHelper timeHelper) {
         this.userService = userService;
         this.userHelper = userHelper;
+        this.timeHelper = timeHelper;
     }
 
     @RequestMapping("/NIC/login")
@@ -101,7 +103,7 @@ public class UserController {
             result.put("code", 102);
             result.put("msg", "登录成功");
             result.put("data", userHelper.getUserLoginInfo("userid", userid));
-            result.put("time", TimeUtil.getCurrentWeekInfo());
+            result.put("time", timeHelper.getCurrentWeekInfo());
         } else {
             result.put("code", 101);
             result.put("msg", "密码错误");

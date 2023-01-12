@@ -1,4 +1,4 @@
-package group.su.service.util;
+package group.su.service.helper;
 
 import com.alibaba.fastjson.JSONObject;
 import group.su.dao.impl.ConfigDaoImpl;
@@ -7,26 +7,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
-public class TimeUtil {
+@Service
+public class TimeHelper {
 
-    @Autowired
-    private ConfigDaoImpl configDaoImpl;
+    private final ConfigDaoImpl configDao;
     static Document firstDay;
     static Document timetable;
+    boolean init = false;
 
-    @PostConstruct
-    public void init() {
-        firstDay = (Document) configDaoImpl.showItemByInput("item", "timetable").first().get("firstDay");
-        timetable = configDaoImpl.showItemByInput("item", "timetable").first();
+    @Autowired
+    public TimeHelper(ConfigDaoImpl configDao) {
+        this.configDao = configDao;
     }
 
-    public static int[] changeTimeToInts(String time) {
+    private void initData(){
+        if (init) {
+            return;
+        }
+        timetable = configDao.showItemByInput("item", "timetable").first();
+        firstDay = (Document) configDao.showItemByInput("item", "timetable").first().get("firstDay");
+        init = true;
+    }
+
+    public int[] changeTimeToInts(String time) {
 
         String[] strings = time.split(":");
         int[] HourWithMinute = new int[2];
@@ -36,8 +43,9 @@ public class TimeUtil {
         return HourWithMinute;
     }
 
-    public static Integer[] getWeekDayByTime(Map<String, Integer> time) {
+    public Integer[] getWeekDayByTime(Map<String, Integer> time) {
         // 根据年月日获取周数与星期
+        initData();
 
         Calendar beginCalendar = Calendar.getInstance();
         beginCalendar.set(
@@ -72,8 +80,8 @@ public class TimeUtil {
         return new Integer[]{week, weekDay};
     }
 
-    public static boolean checkAvailable(int[] missionStartTime, int[] missionEndTime,
-                                         int[] classStartTime, int[] classEndTime) {
+    public boolean checkAvailable(int[] missionStartTime, int[] missionEndTime,
+                                  int[] classStartTime, int[] classEndTime) {
         // 判断课程时间与任务时间的关系
         // 以下为时间线示意图
         // 任务: ......000000000000000000000000000.......
@@ -99,7 +107,9 @@ public class TimeUtil {
         return true;
     }
 
-    public static String getSeason(Integer week) {
+    public String getSeason(Integer week) {
+        initData();
+
         // 根据周数获取夏冬令时
         int winterWeek = (int) timetable.get("winterBegin");
         int summerWeek = (int) timetable.get("summerBegin");
@@ -119,12 +129,12 @@ public class TimeUtil {
         }
     }
 
-    public static JSONObject getCurrentWeekInfo() {
+    public JSONObject getCurrentWeekInfo() {
         // 获取当前是第几周星期几
-        Integer[] weekDayByTime = TimeUtil.getWeekDayByTime(new HashMap<String, Integer>() {{
+        Integer[] weekDayByTime = getWeekDayByTime(new HashMap<String, Integer>() {{
             Calendar calendar = Calendar.getInstance();
             put("year", calendar.get(Calendar.YEAR));
-            put("month", calendar.get(Calendar.MONTH)+1);
+            put("month", calendar.get(Calendar.MONTH) + 1);
             put("day", calendar.get(Calendar.DATE));
         }});
         return new JSONObject() {{

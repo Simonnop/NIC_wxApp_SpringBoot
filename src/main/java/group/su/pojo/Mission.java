@@ -13,6 +13,7 @@ import java.util.*;
 public class Mission {
     @Transient
     private static int count = 1;
+    @Id
     String missionID;
     int element;  // 任务属性
     Map<String, Integer> time;
@@ -22,7 +23,7 @@ public class Mission {
     Map<String, String> status;
     Map<String, String> statusChanger;
     Map<String, Integer> reporterNeeds;
-    Map<String, List<User>> reporters;
+    Map<String, List<String>> reporters;
     ArrayList<String> files;
 
     public void initializeMission() {

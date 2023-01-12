@@ -31,14 +31,6 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public <T> FindIterable<Document> searchUserByInputContain(String field, T value) {
-        // 指定查询过滤器
-        Bson filter = Filters.elemMatch(field, Filters.eq(value));
-        // 根据查询过滤器查询
-        return userCollection.find(filter);
-    }
-
-    @Override
     public <T, K> void addToSetInUser(String filterField, T filterValue, String updateField, K updateValue) {
         // 集合中插入
         Bson filter = Filters.eq(filterField, filterValue);
@@ -47,13 +39,5 @@ public class UserDaoImpl implements UserDao {
         userCollection.updateOne(filter, update);
     }
 
-    @Override
-    public <T, K> void updateInUser(String filterField, T filterValue, String updateField, K updateValue) {
-        // 更新字段
-        Bson filter = Filters.eq(filterField, filterValue);
-        Bson update = Updates.set(updateField, updateValue);
-
-        userCollection.updateOne(filter, update);
-    }
 
 }

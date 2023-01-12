@@ -11,7 +11,9 @@ import java.util.Map;
 @Document("User")
 public class User {
 
+    @Id
     String userid;
+
     String username;
     String password;
     String classStr;

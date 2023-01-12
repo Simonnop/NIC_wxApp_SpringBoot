@@ -21,7 +21,7 @@ public class MissionDaoImpl implements MissionDao {
     private MongoTemplate mongoTemplate;
 
     // 获取集合
-    MongoCollection<Document> missionCollection = mongoTemplate.getCollection("Mission");
+    MongoCollection<Document> missionCollection = DataBaseUtil.getMongoDB().getCollection("Mission");
 
     @Override
     public void addMission(Mission mission) {

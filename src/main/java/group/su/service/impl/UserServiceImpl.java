@@ -116,7 +116,6 @@ public class UserServiceImpl implements UserService {
                     .get("写稿")
                     .equals("未达成")) {
                 documentArrayList.add(missionManager.calculateLack(document));
-                System.out.println(missionID);
             }
         }
         return documentArrayList;

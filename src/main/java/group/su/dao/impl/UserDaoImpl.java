@@ -11,16 +11,12 @@ import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
 
 @Repository
 public class UserDaoImpl implements UserDao {
 
-    @Resource
-    private MongoTemplate mongoTemplate;
-
     // 获取集合
-    MongoCollection<Document> userCollection = DataBaseUtil.getMongoDB().getCollection("User");
+    static MongoCollection<Document> userCollection = DataBaseUtil.getMongoDB().getCollection("User");
 
     @Override
     public <T> FindIterable<Document> searchUserByInputEqual(String field, T value) {

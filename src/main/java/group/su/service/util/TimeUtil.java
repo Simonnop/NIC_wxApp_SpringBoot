@@ -15,15 +15,24 @@ import java.util.Map;
 @Component
 public class TimeUtil {
 
-    @Autowired
-    private ConfigDaoImpl configDaoImpl;
+    private static ConfigDaoImpl staticConfigDao;
+
     static Document firstDay;
     static Document timetable;
+    static Boolean isInit = false;
 
-    @PostConstruct
-    public void init() {
-        firstDay = (Document) configDaoImpl.showItemByInput("item", "timetable").first().get("firstDay");
-        timetable = configDaoImpl.showItemByInput("item", "timetable").first();
+    @Autowired
+    public void setConfigDaoImpl(ConfigDaoImpl configDaoImpl) {
+        staticConfigDao = configDaoImpl;
+    }
+
+    public static void init() {
+        if (isInit) {
+            return;
+        }
+        firstDay = (Document) staticConfigDao.showItemByInput("item", "timetable").first().get("firstDay");
+        timetable = staticConfigDao.showItemByInput("item", "timetable").first();
+        isInit = true;
     }
 
     public static int[] changeTimeToInts(String time) {
@@ -38,7 +47,7 @@ public class TimeUtil {
 
     public static Integer[] getWeekDayByTime(Map<String, Integer> time) {
         // 根据年月日获取周数与星期
-
+        init();
         Calendar beginCalendar = Calendar.getInstance();
         beginCalendar.set(
                 (Integer) firstDay.get("year"),
@@ -101,6 +110,7 @@ public class TimeUtil {
 
     public static String getSeason(Integer week) {
         // 根据周数获取夏冬令时
+        init();
         int winterWeek = (int) timetable.get("winterBegin");
         int summerWeek = (int) timetable.get("summerBegin");
 

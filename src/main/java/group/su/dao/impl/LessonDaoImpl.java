@@ -18,11 +18,8 @@ import java.util.ArrayList;
 @Repository
 public class LessonDaoImpl implements LessonDao {
 
-    @Resource
-    private MongoTemplate mongoTemplate;
-
     // 获取集合
-    MongoCollection<Document> lessonDocument = DataBaseUtil.getMongoDB().getCollection("Lesson");
+    static MongoCollection<Document> lessonDocument = DataBaseUtil.getMongoDB().getCollection("Lesson");
 
     @Override
     public void addLessonInfo(String userid, String lessonStr) {

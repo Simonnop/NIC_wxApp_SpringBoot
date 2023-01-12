@@ -17,11 +17,8 @@ import javax.annotation.Resource;
 @Repository
 public class ConfigDaoImpl implements ConfigDao {
 
-    @Resource
-    private MongoTemplate mongoTemplate;
-
     // 获取集合
-    MongoCollection<Document> ConfigCollection = DataBaseUtil.getMongoDB().getCollection("Config");
+    static MongoCollection<Document> ConfigCollection = DataBaseUtil.getMongoDB().getCollection("Config");
 
     @Override
     public <T> FindIterable<Document> showItemByInput(String field, T value) {

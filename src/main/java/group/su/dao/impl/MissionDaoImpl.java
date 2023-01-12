@@ -12,20 +12,17 @@ import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
 
 @Repository
 public class MissionDaoImpl implements MissionDao {
 
-    @Resource
-    private MongoTemplate mongoTemplate;
-
     // 获取集合
-    MongoCollection<Document> missionCollection = DataBaseUtil.getMongoDB().getCollection("Mission");
+    static MongoCollection<Document> missionCollection = DataBaseUtil.getMongoDB().getCollection("Mission");
 
     @Override
     public void addMission(Mission mission) {
-        mongoTemplate.save(mission);
+        Document document = mission.changeToDocument();
+        missionCollection.insertOne(document);
     }
 
     @Override

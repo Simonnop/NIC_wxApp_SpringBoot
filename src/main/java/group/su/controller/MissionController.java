@@ -9,6 +9,7 @@ import group.su.pojo.Mission;
 import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,7 +56,7 @@ public class MissionController {
 
     @RequestMapping("/NIC/show")
     public String showRequestDistributor(@RequestParam("method") String method,
-                                         @RequestParam("data") String data,
+                                         @RequestParam("data") @Nullable String data,
                                          HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);

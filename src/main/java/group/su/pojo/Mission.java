@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -66,6 +67,24 @@ public class Mission {
         if (count == 99) {
             count = 1;
         }
+    }
+
+    public org.bson.Document changeToDocument() {
+        org.bson.Document doc = new org.bson.Document();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field :
+                fields) {
+            field.setAccessible(true);
+            try {
+                doc.put(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            doc.remove("count");
+            doc.remove("publisher");
+        }
+
+        return doc;
     }
 
     public String initDataCode() {

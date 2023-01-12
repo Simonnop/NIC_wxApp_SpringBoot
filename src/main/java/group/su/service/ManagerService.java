@@ -4,6 +4,7 @@ import group.su.pojo.Mission;
 import org.bson.Document;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public interface ManagerService {
 
@@ -13,4 +14,5 @@ public interface ManagerService {
 
     ArrayList<String> findAvailableReporters(String missionID, Integer... intervals);
 
+    Map<String, Integer> findAvailableTime(int week);
 }

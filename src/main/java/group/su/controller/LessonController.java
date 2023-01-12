@@ -5,10 +5,12 @@ import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
 import group.su.service.helper.SocketHelper;
+import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,17 +23,19 @@ import java.util.ArrayList;
 public class LessonController {
 
     private final UserServiceImpl userService;
+    private final ManagerServiceImpl managerService;
     private final SocketHelper socketHelper;
 
     @Autowired
-    public LessonController(UserServiceImpl userService,SocketHelper socketHelper) {
+    public LessonController(UserServiceImpl userService,SocketHelper socketHelper,ManagerServiceImpl managerService) {
         this.userService = userService;
         this.socketHelper = socketHelper;
+        this.managerService = managerService;
     }
 
     @RequestMapping("/NIC/lesson")
     public String lessonRequestDistributor(@RequestParam("method") String method,
-                                     @RequestParam("data") String data,
+                                     @RequestParam("data") @Nullable String data,
                                      HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);
@@ -43,15 +47,50 @@ public class LessonController {
                 case "get":
                     result = getLessonResponse(dataJson);
                     break;
+                case "find":
+                    result = findReporterResponse(dataJson);
+                    break;
+                case "calculate":
+                    result = calculateAvailableTimeResponse(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
         } catch (Exception e) {
             ExceptionHandler.handleException(e, result, req, LessonController.class);
+            e.printStackTrace();
         }
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject calculateAvailableTimeResponse(JSONObject dataJson) {
+        Integer week = (Integer) dataJson.get("week");
+        //Integer weekStart = (Integer) dataJson.get("weekStart");
+        //Integer weekEnd = (Integer) dataJson.get("weekEnd");
+        if (week == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        return new JSONObject() {{
+            put("code", 702);
+            put("msg", "查询空闲时间成功");
+            put("data", managerService.findAvailableTime(week));
+        }};
+    }
+
+    private JSONObject findReporterResponse(JSONObject dataJson) {
+        String missionID = (String) dataJson.get("missionID");
+        //Integer weekStart = (Integer) dataJson.get("weekStart");
+        //Integer weekEnd = (Integer) dataJson.get("weekEnd");
+        if (missionID == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        return new JSONObject() {{
+            put("code", 702);
+            put("msg", "查询空闲记者成功");
+            put("data", managerService.findAvailableReporters(missionID));
+        }};
     }
 
     private JSONObject getLessonResponse(JSONObject dataJson) {

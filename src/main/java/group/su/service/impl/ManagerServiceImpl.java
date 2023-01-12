@@ -15,9 +15,8 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -30,7 +29,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Autowired
     public ManagerServiceImpl(UserDao userDao, MissionDao missionDao, ConfigDao configDao,
-                           LessonDao lessonDao, MissionHelper missionManager) {
+                              LessonDao lessonDao, MissionHelper missionManager) {
         this.userDao = userDao;
         this.missionDao = missionDao;
         this.configDao = configDao;
@@ -44,8 +43,8 @@ public class ManagerServiceImpl implements ManagerService {
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
         statusChanger.put("发布任务", (String) userDao
-                        .searchUserByInputEqual("userid", userid).first()
-                        .get("username"));
+                .searchUserByInputEqual("userid", userid).first()
+                .get("username"));
         mission.setStatusChanger(statusChanger);
         // 添加任务
         missionDao.addMission(mission);
@@ -133,4 +132,40 @@ public class ManagerServiceImpl implements ManagerService {
 
         return reportersList;
     }
+
+    @Override
+    public Map<String, Integer> findAvailableTime(int week) {
+        Map<String, Integer> map = new HashMap<>();
+        // 初始化 map
+        for (int day = 0; day < 7; day++) {
+            for (int i = 0; i < configDao.showItemByInput("item","timetable")
+                    .first()
+                    .getList(TimeUtil.getSeason(week),Document.class)
+                    .size(); i++) {
+                map.put((day + 1) + "-" + (i + 1), 0);
+            }
+        }
+        // 遍历每个人的课表
+        for (Document document : lessonDao.showAll()) {
+            // 看每一天的课
+            for (int day = 0; day < 7; day++) {
+                List<Document> lessonOfDay = document.getList("lessons", Document.class)
+                        .get(week - 1)
+                        .getList("time", Document.class)
+                        .get(day)
+                        .getList("lesson", Document.class);
+                for (Document lessons : lessonOfDay) {
+                    // 获取课程是第几节
+                    String[] times = ((String) lessons.get("time")).split("-");
+                    for (int i = Integer.parseInt(times[0]); i <= Integer.parseInt(times[1]); i++) {
+                        String key = (day + 1) + "-" + i;
+                        map.put(key, map.get(key) + 1);
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+
 }

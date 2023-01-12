@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import javax.annotation.Resource;
+import java.util.Map;
 import java.util.Optional;
 
 @SpringBootTest
@@ -38,7 +39,9 @@ class NicWxAppSpringBootApplicationTests {
     @Test
     void get() {
 
-        System.out.println(mongoTemplate.getCollection("User").find().first());
+        Map<String, Integer> availableTime = managerService.findAvailableTime(1);
+
+        System.out.println(availableTime);
 /*
         Mission mission = missionDao.findMissionById("1935121201");
 

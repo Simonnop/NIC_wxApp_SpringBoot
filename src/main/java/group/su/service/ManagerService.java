@@ -9,7 +9,7 @@ public interface ManagerService {
 
     void addMission(Mission mission, String publisher);
 
-    ArrayList<Document> showMissionGotDraft();
+    ArrayList<Mission> showMissionGotDraft();
 
     ArrayList<String> findAvailableReporters(String missionID, Integer... intervals);
 

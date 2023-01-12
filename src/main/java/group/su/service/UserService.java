@@ -1,23 +1,22 @@
 package group.su.service;
 
-import org.apache.commons.fileupload.FileItem;
+import group.su.pojo.Mission;
 import org.bson.Document;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public interface UserService {
 
     Boolean tryLogin(String userid, String password);
 
-    ArrayList<Document> showAllMission();
+    ArrayList<Mission> showAllMission();
 
-    ArrayList<Document> showNeedMission();
+    ArrayList<Mission> showNeedMission();
 
-    ArrayList<Document> showMissionById(String missionID);
+    ArrayList<Mission> showMissionById(String missionID);
 
-    ArrayList<Document> showTakenMission(String field, String value);
+    ArrayList<Mission> showTakenMission(String userid);
 
     void tryGetMission(String userid, String missionID, String kind);
 

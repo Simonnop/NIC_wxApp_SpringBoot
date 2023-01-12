@@ -82,9 +82,7 @@ public class UserController {
         return new JSONObject() {{
             put("code", 602);
             put("msg", "查询用户已接任务成功");
-            put("data", userService.showTakenMission(
-                    "userid",
-                    (String) dataJson.get("userid")));
+            put("data", userService.showTakenMission((String) dataJson.get("userid")));
         }};
     }
 

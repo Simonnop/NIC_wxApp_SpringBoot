@@ -24,6 +24,8 @@ public class Mission {
     Map<String, String> statusChanger;
     Map<String, Integer> reporterNeeds;
     Map<String, List<String>> reporters;
+    @Transient
+    Map<String, Integer> reporterLack;
     ArrayList<String> files;
 
     public void initializeMission() {

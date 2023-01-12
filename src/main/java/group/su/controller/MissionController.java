@@ -2,6 +2,7 @@ package group.su.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.lang.Nullable;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
@@ -55,7 +56,7 @@ public class MissionController {
 
     @RequestMapping("/NIC/show")
     public String showRequestDistributor(@RequestParam("method") String method,
-                                         @RequestParam("data") String data,
+                                         @RequestParam("data") @Nullable String data,
                                          HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);

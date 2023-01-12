@@ -1,12 +1,10 @@
 package group.su.service.impl;
 
-import com.mongodb.client.FindIterable;
-import group.su.dao.ConfigDao;
-import group.su.dao.LessonDao;
-import group.su.dao.MissionDao;
-import group.su.dao.UserDao;
+import group.su.dao.*;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
+import group.su.pojo.Mission;
+import group.su.pojo.User;
 import group.su.service.UserService;
 import group.su.service.helper.MissionHelper;
 import group.su.service.helper.TimeHelper;
@@ -20,6 +18,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,6 +30,12 @@ public class UserServiceImpl implements UserService {
     final LessonDao lessonDao;
     final MissionHelper missionManager;
     final TimeHelper timeHelper;
+
+    @Autowired
+    MissionDaoTest missionDaoTest;
+
+    @Autowired
+    UserDaoTest userDaoTest;
 
     @Autowired
     public UserServiceImpl(UserDao userDao, MissionDao missionDao, ConfigDao configDao,
@@ -45,73 +51,71 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean tryLogin(String userid, String password) {
 
-        Document user = userDao.searchUserByInputEqual("userid", userid).first();
+        User user = userDaoTest.findByUserid(userid);
         if (user == null) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        return password.equals(user.get("password"));
+        return password.equals(user.getPassword());
     }
 
     @Override
-    public ArrayList<Document> showAllMission() {
+    public ArrayList<Mission> showAllMission() {
 
-        FindIterable<Document> documents = missionDao.showAll();
-        if (documents.first() == null) {
+        List<Mission> missionList = missionDaoTest.findAll();
+        if (missionList.isEmpty()) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        return missionManager.changeFormAndCalculate(documents);
+        return missionManager.changeFormAndCalculate(missionList);
     }
 
     @Override
-    public ArrayList<Document> showNeedMission() {
+    public ArrayList<Mission> showNeedMission() {
 
-        ArrayList<Document> documentArrayList = new ArrayList<>();
+        ArrayList<Mission> documentArrayList = new ArrayList<>();
 
-        FindIterable<Document> documents = missionDao.showAll();
-        if (documents.first() == null) {
+        List<Mission> missionList = missionDaoTest.findAll();
+        if (missionList.isEmpty()) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
         // 判断是否缺人
-        for (Document document : missionManager.changeFormAndCalculate(documents)) {
-            if (((Document) document.get("status"))
+        for (Mission mission : missionManager.changeFormAndCalculate(missionList)) {
+            if (mission.getStatus()
                     .get("接稿")
                     .equals("未达成")) {
-                documentArrayList.add(document);
+                documentArrayList.add(mission);
             }
         }
         return documentArrayList;
-
     }
 
     @Override
-    public ArrayList<Document> showMissionById(String missionID) {
+    public ArrayList<Mission> showMissionById(String missionID) {
 
-        FindIterable<Document> documents = missionDao.searchMissionByInput("missionID", missionID);
-        if (documents.first() == null) {
+        List<Mission> missionList = missionDaoTest.findAll();
+        if (missionList.isEmpty()) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        return missionManager.changeFormAndCalculate(documents);
-
+        return missionManager.changeFormAndCalculate(missionList);
     }
 
     @Override
-    public ArrayList<Document> showTakenMission(String field, String value) {
+    public ArrayList<Mission> showTakenMission(String userid) {
 
-        ArrayList<Document> documentArrayList = new ArrayList<>();
+        ArrayList<Mission> documentArrayList = new ArrayList<>();
 
-        Document userInfo = userDao.searchUserByInputEqual(field, value).first();
-        if (userInfo == null) {
+        User user = userDaoTest.findByUserid(userid);
+        if (user == null) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        for (String missionID : userInfo.getList("missionTaken", String.class)) {
-            Document document = missionDao.searchMissionByInput("missionID", missionID).first();
-            if (document == null) {
+        for (String missionID : user.getMissionTaken()) {
+            Mission mission = missionDaoTest.findMissionByMissionID(missionID);
+            if (mission == null) {
                 continue;
             }
-            if (((Document) document.get("status"))
+            if ((mission.getStatus())
                     .get("写稿")
                     .equals("未达成")) {
-                documentArrayList.add(missionManager.calculateLack(document));
+                documentArrayList.add(missionManager.calculateLack(mission));
                 System.out.println(missionID);
             }
         }
@@ -121,29 +125,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public void tryGetMission(String userid, String missionID, String kind) {
 
-        // 不带事务写法: 不验证 username 响应时间更快
         boolean success = true;
         try {
-            synchronized (missionDao) {
-                Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+            synchronized (missionDaoTest) {
+                Mission mission = missionDaoTest.findMissionByMissionID(missionID);
                 // 验证非空
-                if (document == null) {
+                if (mission == null) {
                     throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
                 }
-                missionManager.calculateLack(document);
+                missionManager.calculateLack(mission);
                 // 验证非满员
-                if (((Document) document.get("reporterLack"))
+                if (mission.getReporterLack()
                         .get(kind)
                         .equals(0)) {
                     throw new AppRuntimeException(ExceptionKind.ENOUGH_PEOPLE);
                 }
                 // 验证未参与
-                if (((ArrayList<?>) ((Document) document.get("reporters"))
+                if ((mission.getReporters()
                         .get(kind))
                         .contains(userid)) {
                     throw new AppRuntimeException(ExceptionKind.ALREADY_PARTICIPATE);
                 }
-                missionDao.addToSetInMission("missionID", missionID, "reporters." + kind, userid);
+                Map<String, List<String>> reporters = mission.getReporters();
+                reporters.get(kind).add(userid);
+                mission.setReporters(reporters);
+                missionDaoTest.save(mission);
             }
         } catch (Exception e) {
             success = false;

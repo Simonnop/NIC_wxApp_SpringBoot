@@ -52,25 +52,25 @@ public class ManagerServiceImpl implements ManagerService {
         statusChanger.put("发布任务", userDaoTest.findByUserid(userid).getUsername());
         mission.setStatusChanger(statusChanger);
         // 添加任务
-        missionDao.addMission(mission);
+        missionDaoTest.insert(mission);
     }
 
     @Override
-    public ArrayList<Document> showMissionGotDraft() {
+    public ArrayList<Mission> showMissionGotDraft() {
 
-
-        FindIterable<Document> documents = missionDao.showAll();
-        if (documents.first() == null) {
+        List<Mission> missionList = missionDaoTest.findAll();
+        if (missionList.isEmpty()) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        ArrayList<Document> documentArrayList = missionManager.changeFormAndCalculate(documents);
+        ArrayList<Mission> missionsWithLack = missionManager.changeFormAndCalculate(missionList);
 
         // 判断是否缺人
-        documentArrayList.removeIf(document -> ((Document) document
-                .get("status"))
+        missionsWithLack.removeIf(mission -> (mission
+                .getStatus()
                 .get("写稿")
-                .equals("未达成"));
-        return documentArrayList;
+                .equals("未达成")));
+
+        return missionsWithLack;
     }
 
     @Override
@@ -79,11 +79,11 @@ public class ManagerServiceImpl implements ManagerService {
         ArrayList<String> reportersList = new ArrayList<>();
 
         // 拿任务的时间
-        Document mission = missionDao.searchMissionByInput("missionID", missionID).first();
+        Mission mission = missionDaoTest.findMissionByMissionID(missionID);
         if (mission == null) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        Map<String, Integer> time = (Map<String, Integer>) mission.get("time");
+        Map<String, Integer> time = mission.getTime();
 
         // 查询第几周星期几
         Integer[] weekDayByTime = timeHelper.getWeekDayByTime(time);

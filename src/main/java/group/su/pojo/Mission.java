@@ -23,7 +23,7 @@ public class Mission {
     Map<String, String> status;
     Map<String, String> statusChanger;
     Map<String, Integer> reporterNeeds;
-    Map<String, List<User>> reporters;
+    Map<String, List<String>> reporters;
     ArrayList<String> files;
 
     public void initializeMission() {
@@ -85,6 +85,22 @@ public class Mission {
         }
 
         return doc;
+    }
+
+    public static Mission changeToMission(org.bson.Document document) {
+
+        Mission mission = new Mission();
+        try {
+            document.remove("_id");
+            for (String key : document.keySet()) {
+                Field field = mission.getClass().getDeclaredField(key);
+                field.setAccessible(true);
+                field.set(mission, document.get(key));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mission;
     }
 
     public String initDataCode() {

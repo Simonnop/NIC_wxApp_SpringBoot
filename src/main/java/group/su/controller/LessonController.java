@@ -81,8 +81,6 @@ public class LessonController {
 
     private JSONObject findReporterResponse(JSONObject dataJson) {
         String missionID = (String) dataJson.get("missionID");
-        //Integer weekStart = (Integer) dataJson.get("weekStart");
-        //Integer weekEnd = (Integer) dataJson.get("weekEnd");
         if (missionID == null) {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
@@ -96,8 +94,6 @@ public class LessonController {
     private JSONObject getLessonResponse(JSONObject dataJson) {
 
         String userid = (String) dataJson.get("userid");
-        //Integer weekStart = (Integer) dataJson.get("weekStart");
-        //Integer weekEnd = (Integer) dataJson.get("weekEnd");
         if (userid == null) {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }

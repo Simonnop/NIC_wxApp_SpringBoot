@@ -136,12 +136,14 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public Map<String, Integer> findAvailableTime(int week) {
         Map<String, Integer> map = new HashMap<>();
+        // 看一天有多少节课
+        int size = configDao.showItemByInput("item", "timetable")
+                .first()
+                .getList(TimeUtil.getSeason(week), Document.class)
+                .size();
         // 初始化 map
         for (int day = 0; day < 7; day++) {
-            for (int i = 0; i < configDao.showItemByInput("item","timetable")
-                    .first()
-                    .getList(TimeUtil.getSeason(week),Document.class)
-                    .size(); i++) {
+            for (int i = 0; i < size; i++) {
                 map.put((day + 1) + "-" + (i + 1), 0);
             }
         }

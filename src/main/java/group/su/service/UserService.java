@@ -27,4 +27,5 @@ public interface UserService {
 
     ArrayList<Document> showLessons(String userid, Integer... week);
 
+    ArrayList<Document> showFinishedMission(String field, String value);
 }

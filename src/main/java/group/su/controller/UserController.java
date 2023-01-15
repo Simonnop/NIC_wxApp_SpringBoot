@@ -65,6 +65,8 @@ public class UserController {
                 case "userInfo":
                     result = showMissionTakenResponse(dataJson);
                     break;
+                case "showFinished":
+                    result = showFinishedMission(dataJson);
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -83,6 +85,15 @@ public class UserController {
             put("data", userService.showTakenMission(
                     "userid",
                     (String) dataJson.get("userid")));
+        }};
+    }
+
+    private JSONObject showFinishedMission(JSONObject dataJson) {
+        return new JSONObject() {{
+            put("data", userService.showFinishedMission("userid",
+                    (String) dataJson.get("userid")));
+            put("code", 602);
+            put("msg", "查询用户已完成任务成功");
         }};
     }
 

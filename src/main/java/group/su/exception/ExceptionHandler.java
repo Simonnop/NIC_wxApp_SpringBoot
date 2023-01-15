@@ -9,8 +9,8 @@ import java.net.URLDecoder;
 
 public class ExceptionHandler {
 
-    public static void handleException(Exception e, JSONObject result,
-                                       HttpServletRequest req, Class clazz) throws UnsupportedEncodingException {
+    public static <T> void handleException(Exception e, JSONObject result,
+                                           HttpServletRequest req, Class<T> clazz) throws UnsupportedEncodingException {
         Logger logger = Logger.getLogger(clazz);
         if (e instanceof AppRuntimeException) {
             result.put("code", ((AppRuntimeException) e).getCode());

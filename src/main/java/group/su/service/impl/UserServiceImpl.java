@@ -224,4 +224,27 @@ public class UserServiceImpl implements UserService {
 
         return documents;
     }
+
+    @Override
+    public ArrayList<Document> showFinishedMission(String field, String value) {
+
+        ArrayList<Document> documentArrayList = new ArrayList<>();
+
+        Document userInfo = userDao.searchUserByInputEqual(field, value).first();
+        if (userInfo == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        for (String missionID : userInfo.getList("missionTaken", String.class)) {
+            Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+            if (document == null) {
+                continue;
+            }
+            if (!(document.get("status",Document.class))
+                    .get("写稿")
+                    .equals("未达成")) {
+                documentArrayList.add(missionManager.calculateLack(document));
+            }
+        }
+        return documentArrayList;
+    }
 }

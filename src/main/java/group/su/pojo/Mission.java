@@ -37,28 +37,28 @@ public class Mission {
                 put("排版", "未达成");
             } else if (element == 1) {
                 put("接稿", "跳过");
-                put("写稿", "未达成");
+                put("写稿", "跳过");
                 put("编辑部审稿", "未达成");
                 put("辅导员审核", "未达成");
                 put("排版", "未达成");
             } else if (element == 2) {
                 put("接稿", "跳过");
                 put("写稿", "跳过");
-                put("编辑部审稿", "未达成");
+                put("编辑部审稿", "跳过");
                 put("辅导员审核", "未达成");
                 put("排版", "未达成");
             } else if (element == 3) {
                 put("接稿", "跳过");
                 put("写稿", "跳过");
                 put("编辑部审稿", "跳过");
-                put("辅导员审核", "未达成");
+                put("辅导员审核", "跳过");
                 put("排版", "未达成");
             } else if (element == 4) {
                 put("接稿", "跳过");
                 put("写稿", "跳过");
                 put("编辑部审稿", "跳过");
                 put("辅导员审核", "跳过");
-                put("排版", "未达成");
+                put("排版", "跳过");
             }
         }};
         this.statusChanger = new HashMap<String, String>() {{

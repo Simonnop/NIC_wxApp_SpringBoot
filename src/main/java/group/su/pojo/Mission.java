@@ -29,18 +29,37 @@ public class Mission {
     public void initializeMission() {
         this.status = new HashMap<String, String>() {{
             put("发布任务", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-            System.out.println(element);
             if (element == 0) {
                 put("接稿", "未达成");
                 put("写稿", "未达成");
                 put("编辑部审稿", "未达成");
-            } else {
+                put("辅导员审核", "未达成");
+                put("排版", "未达成");
+            } else if (element == 1) {
+                put("接稿", "跳过");
+                put("写稿", "未达成");
+                put("编辑部审稿", "未达成");
+                put("辅导员审核", "未达成");
+                put("排版", "未达成");
+            } else if (element == 2) {
+                put("接稿", "跳过");
+                put("写稿", "跳过");
+                put("编辑部审稿", "未达成");
+                put("辅导员审核", "未达成");
+                put("排版", "未达成");
+            } else if (element == 3) {
                 put("接稿", "跳过");
                 put("写稿", "跳过");
                 put("编辑部审稿", "跳过");
+                put("辅导员审核", "未达成");
+                put("排版", "未达成");
+            } else if (element == 4) {
+                put("接稿", "跳过");
+                put("写稿", "跳过");
+                put("编辑部审稿", "跳过");
+                put("辅导员审核", "跳过");
+                put("排版", "未达成");
             }
-            put("辅导员审核", "未达成");
-            put("排版", "未达成");
         }};
         this.statusChanger = new HashMap<String, String>() {{
             put("发布任务", null);
@@ -50,9 +69,13 @@ public class Mission {
             put("排版", null);
         }};
         reporters = new HashMap<>();
-        for (String str : reporterNeeds.keySet()
-        ) {
-            reporters.put(str, new ArrayList<>());
+        if (!(reporterNeeds ==null)) {
+            for (String str : reporterNeeds.keySet()
+            ) {
+                reporters.put(str, new ArrayList<>());
+            }
+        }else {
+            reporterNeeds = new HashMap<>();
         }
         // 设置任务号
         if (count < 10) {
@@ -106,6 +129,13 @@ public class Mission {
     public String initDataCode() {
         String gap1 = "";
         String gap2 = "";
+        if (time == null) {
+            Calendar calendar = Calendar.getInstance();
+            time = new HashMap<>();
+            time.put("year", calendar.get(Calendar.YEAR));
+            time.put("month", calendar.get(Calendar.MONTH) + 1);
+            time.put("day", calendar.get(Calendar.DATE));
+        }
         if (time.get("month") < 10) {
             gap1 = "0";
         }

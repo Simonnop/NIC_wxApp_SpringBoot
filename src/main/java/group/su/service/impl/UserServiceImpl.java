@@ -182,6 +182,13 @@ public class UserServiceImpl implements UserService {
             missionDao.addToSetInMission(
                     "missionID", missionID,
                     "files", fileName);
+            // 看这个任务是不是普通任务
+            Integer element = missionDao.searchMissionByInput("missionID", missionID)
+                    .first()
+                    .get("element", Integer.class);
+            if (element != 0) {
+                return;
+            }
             // 任务写稿完成
             missionDao.updateInMission(
                     "missionID", missionID,

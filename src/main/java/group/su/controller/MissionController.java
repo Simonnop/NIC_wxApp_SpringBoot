@@ -171,7 +171,7 @@ public class MissionController {
 
     private JSONObject addMissionResponse(JSONObject dataJson) {
 
-        int missionElement = Integer.parseInt((String) dataJson.get("element"));
+        int missionElement = Integer.parseInt(dataJson.get("element").toString());
         String publisher = (String) dataJson.get("publisher");
         // parseObject 参数要求是字符串
         Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
@@ -182,6 +182,7 @@ public class MissionController {
         return new JSONObject() {{
             put("code", 202);
             put("msg", "任务添加成功");
+            put("missionID", mission.getMissionID());
         }};
     }
 

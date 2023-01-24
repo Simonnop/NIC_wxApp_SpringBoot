@@ -20,11 +20,22 @@ public class Mission {
     String place;
     String title;
     String description;
+    String tag1;
+    String tag2;
     Map<String, String> status;
     Map<String, String> statusChanger;
     Map<String, Integer> reporterNeeds;
     Map<String, List<String>> reporters;
-    ArrayList<String> files;
+    ArrayList<String> files = new ArrayList<>();
+
+    // 审核部分
+    ArrayList<String> layoutFiles = new ArrayList<>();
+    Map<String, Integer> score = new HashMap<>();
+    ArrayList<String> draftTags = new ArrayList<>();
+    Map<String, String> comments = new HashMap<>();
+    Map<String, String> postscript = new HashMap<>();
+    String deadline;
+
 
     public void initializeMission() {
         this.status = new HashMap<String, String>() {{
@@ -69,12 +80,12 @@ public class Mission {
             put("排版", null);
         }};
         reporters = new HashMap<>();
-        if (!(reporterNeeds ==null)) {
+        if (!(reporterNeeds == null)) {
             for (String str : reporterNeeds.keySet()
             ) {
                 reporters.put(str, new ArrayList<>());
             }
-        }else {
+        } else {
             reporterNeeds = new HashMap<>();
         }
         // 设置任务号
@@ -83,7 +94,6 @@ public class Mission {
         } else {
             missionID = initDataCode() + count;
         }
-        files = new ArrayList<>();
         // count累加
         count++;
         // 控制在两位数内

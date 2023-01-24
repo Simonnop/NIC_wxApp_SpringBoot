@@ -9,7 +9,6 @@ import group.su.dao.util.DataBaseUtil;
 import group.su.pojo.Mission;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
 
@@ -38,6 +37,13 @@ public class MissionDaoImpl implements MissionDao {
         return missionCollection.find(filter);
     }
 
+    @Override
+    public <T> FindIterable<Document> searchMissionByInput(String field1, T value1, String field2, T value2) {
+        // 按字段查询
+        Bson filter = Filters.and(Filters.eq(field1,value1),Filters.eq(field2,value2));
+        return missionCollection.find(filter);
+    }
+
     public <T, K> void addToSetInMission(String filterField, T filterValue, String updateField, K updateValue) {
         // 更新字段(插入)
         Bson filter = Filters.eq(filterField, filterValue);
@@ -51,5 +57,11 @@ public class MissionDaoImpl implements MissionDao {
         Bson filter = Filters.eq(filterField, filterValue);
         Bson update = Updates.set(updateField, updateValue);
         missionCollection.updateOne(filter, update);
+    }
+
+    @Override
+    public <T> void replaceMission(String filterField, T filterValue, Document document) {
+        Bson filter = Filters.eq(filterField, filterValue);
+        missionCollection.findOneAndReplace(filter, document);
     }
 }

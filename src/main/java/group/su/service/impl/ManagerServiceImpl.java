@@ -15,6 +15,7 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -169,5 +170,30 @@ public class ManagerServiceImpl implements ManagerService {
         return map;
     }
 
+    @Override
+    public void examineDraft(String missionID, String userid, String score,
+                             String comment, String postscript, String ddl, String... tags) {
+        Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
+        Mission mission = Mission.changeToMission(missionDoc);
+        // 判断日期
+        Date oldDate;
+        Date newDate;
+        try {
+            oldDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(mission.getDeadline());
+            newDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ddl);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        if (newDate.compareTo(oldDate) < 0) {
+            mission.setDeadline(ddl);
+        }
+        mission.setDeadline(ddl);
 
+        mission.getComments().put(userid, comment);
+        mission.getDraftTags().addAll(Arrays.asList(tags));
+        mission.getPostscript().put(userid, comment);
+        mission.getScore().put(userid, Integer.valueOf(score));
+        Document document = mission.changeToDocument();
+        missionDao.replaceMission("missionID", missionID, document);
+    }
 }

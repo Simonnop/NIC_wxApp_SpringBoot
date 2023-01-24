@@ -254,4 +254,26 @@ public class UserServiceImpl implements UserService {
         }
         return documentArrayList;
     }
+
+    @Override
+    public ArrayList<Document> showMissionNeedLayout() {
+
+        ArrayList<Document> documentArrayList = new ArrayList<>();
+
+        FindIterable<Document> documents = missionDao.showAll();
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        for (Document document : documents) {
+            if (((Document) document.get("status"))
+                    .get("排版")
+                    .equals("未达成")
+                    && !((Document) document.get("status"))
+                    .get("辅导员审核")
+                    .equals("未达成")) {
+                documentArrayList.add(document);
+            }
+        }
+        return documentArrayList;
+    }
 }

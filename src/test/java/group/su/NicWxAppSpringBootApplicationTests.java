@@ -7,6 +7,7 @@ import group.su.dao.impl.MissionDaoImpl;
 import group.su.dao.impl.UserDaoImpl;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
+import group.su.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,9 @@ class NicWxAppSpringBootApplicationTests {
 
     @Autowired
     ManagerService managerService;
+
+    @Autowired
+    UserService userService;
 
     @Autowired
     UserDaoImpl userDao;
@@ -56,39 +60,7 @@ class NicWxAppSpringBootApplicationTests {
     }
 
     @Test
-    void addMission() {
-        JSONObject result = new JSONObject();
-        String data = "{" +
-                      "\"title\": \"测试新字段\"," +
-                      "\"publisher\": \"U202116999\"," +
-                      "\"element\": 1," +
-                      "\"description\": \"如题\"," +"}";
-
-        System.out.println(data);
-
-        try {
-
-            JSONObject dataJson = JSONObject.parseObject(data);
-
-            int missionElement = Integer.parseInt(dataJson.get("element").toString());
-            String publisher = (String) dataJson.get("publisher");
-            // parseObject 参数要求是字符串
-            Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
-            mission.setElement(missionElement);
-
-            managerService.addMission(mission, publisher);
-
-            result.put("code", 202);
-            result.put("msg", "任务添加成功");
-            result.put("missionID", mission.getMissionID());
-
-        } catch (Exception e) {
-            result.put("code", 203);
-            result.put("msg", "任务信息错误");
-            throw e;
-        } finally {
-            String resultStr = result.toJSONString();
-            System.out.println(resultStr);
-        }
+    void test() {
+        System.out.println(userService.showMissionNeedLayout());
     }
 }

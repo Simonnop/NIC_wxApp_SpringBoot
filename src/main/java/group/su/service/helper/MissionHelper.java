@@ -5,6 +5,8 @@ import group.su.dao.MissionDao;
 import group.su.dao.UserDao;
 import group.su.dao.impl.MissionDaoImpl;
 import group.su.dao.impl.UserDaoImpl;
+import group.su.exception.AppRuntimeException;
+import group.su.exception.ExceptionKind;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,5 +74,18 @@ public class MissionHelper {
         document.put("reporterLack", reporterLack);
 
         return document;
+    }
+
+    public ArrayList<Document> findSimilarMission(String... tags) {
+        FindIterable<Document> documents;
+        if (tags.length == 1) {
+            documents = missionDao.searchMissionByInput("tag1", tags[0]);
+        } else {
+            documents = missionDao.searchMissionByInput("tag1", tags[0], "tag2", tags[1]);
+        }
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        return this.changeFormAndCalculate(documents);
     }
 }

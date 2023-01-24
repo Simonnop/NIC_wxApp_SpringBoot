@@ -15,4 +15,7 @@ public interface ManagerService {
     ArrayList<String> findAvailableReporters(String missionID, Integer... intervals);
 
     Map<String, Integer> findAvailableTime(int week);
+
+    void examineDraft(String missionID, String userid, String score,
+                      String comment, String postscript, String ddl, String... tags);
 }

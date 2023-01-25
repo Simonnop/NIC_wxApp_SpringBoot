@@ -31,6 +31,9 @@ public class UserHelper {
         userAllInfo.remove("tel");
         userAllInfo.remove("classStr");
         userAllInfo.remove("password");
+        userAllInfo.remove("gender");
+        userAllInfo.remove("month_performance");
+        userAllInfo.remove("total_performance");
 
         return userAllInfo;
     }
@@ -46,6 +49,7 @@ public class UserHelper {
             userInfo.put("authority" + levelCount++, level);
         }
         userInfo.remove("_id");
+        userInfo.remove("authorityLevel");
 
         return userInfo;
     }

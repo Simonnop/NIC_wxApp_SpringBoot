@@ -8,6 +8,8 @@ import group.su.dao.impl.UserDaoImpl;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
 import group.su.service.UserService;
+import group.su.service.helper.MissionHelper;
+import group.su.service.helper.UserHelper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,18 +24,14 @@ class NicWxAppSpringBootApplicationTests {
 
     @Autowired
     ManagerService managerService;
-
     @Autowired
     UserService userService;
-
     @Autowired
     UserDaoImpl userDao;
-
     @Autowired
     MissionDaoImpl missionDao;
-
-    @Resource
-    MongoTemplate mongoTemplate;
+    @Autowired
+    UserHelper userHelper;
 
     @Test
     void contextLoads() {
@@ -43,24 +41,10 @@ class NicWxAppSpringBootApplicationTests {
     @Test
     void get() {
 
-        Map<String, Integer> availableTime = managerService.findAvailableTime(1);
-
-        System.out.println(availableTime);
-/*
-        Mission mission = missionDao.findMissionById("1935121201");
-
-        String missionString = JSONObject.toJSONString(mission);
-
-        System.out.println(missionString);
-
-        JSONObject jsonObject = JSONObject.parseObject(missionString);
-*/
-
-
     }
 
     @Test
     void test() {
-        System.out.println(userService.showMissionNeedLayout());
+        System.out.println(userHelper.getUserAllInfo("userid","U202116999"));
     }
 }

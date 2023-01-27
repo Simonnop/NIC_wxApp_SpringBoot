@@ -21,7 +21,7 @@ public interface UserService {
 
     void tryGetMission(String userid, String missionID, String kind);
 
-    void saveFile(MultipartFile file, String missionID, String userid);
+    void saveFile(MultipartFile file, String missionID, String userid, String identity);
 
     ArrayList<String> showTag(String... str);
 

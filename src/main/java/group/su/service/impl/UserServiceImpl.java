@@ -162,7 +162,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveFile(MultipartFile file, String missionID, String userid) {
+    public void saveFile(MultipartFile file, String missionID, String userid, String identity) {
 
         String fileName = missionID+"_"+file.getOriginalFilename(); //获取上传文件原来的名称
         String filePath = "C:\\ProgramData\\NIC\\work_files";

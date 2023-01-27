@@ -43,6 +43,9 @@ public class MissionController {
                 case "getTag":
                     result = getTagResponse(dataJson);
                     break;
+                case "examine":
+                    result = examineMissionResponse(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -109,6 +112,23 @@ public class MissionController {
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject examineMissionResponse(JSONObject dataJson) {
+        String userid = (String) dataJson.get("userid");
+        String missionID = (String) dataJson.get("missionID");
+        String stars = (String) dataJson.get("stars");
+        String review = (String) dataJson.get("review");
+        String[] tags = dataJson.getObject("tag", String[].class);
+        if (userid == null || missionID == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        managerService.examineDraft(missionID,userid,stars,review,tags);
+
+        return new JSONObject() {{
+            put("code", 402);
+            put("msg", "提交审核成功");
+        }};
     }
 
     private JSONObject takeMission(JSONObject dataJson) {

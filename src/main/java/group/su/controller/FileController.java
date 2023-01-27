@@ -6,6 +6,7 @@ import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
 import group.su.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class FileController {
     public String multiUpload(@RequestParam("file") MultipartFile[] files,
                               @RequestParam("missionID") String missionID,
                               @RequestParam("userid") String userid,
+                              @RequestParam("identity") @Nullable String identity,
                               HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         try {
@@ -36,7 +38,7 @@ public class FileController {
             }
             // 这种方法可以保存多个文件
             for (MultipartFile multipartFile : files) {
-                userService.saveFile(multipartFile, missionID, userid);
+                userService.saveFile(multipartFile, missionID, userid, identity);
             }
             result.put("code", 502);
             result.put("msg", "文件上传成功");

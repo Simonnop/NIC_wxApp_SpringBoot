@@ -17,5 +17,5 @@ public interface ManagerService {
     Map<String, Integer> findAvailableTime(int week);
 
     void examineDraft(String missionID, String userid, String score,
-                      String comment, String postscript, String ddl, String... tags);
+                      String comment, String... tags);
 }

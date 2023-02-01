@@ -153,15 +153,24 @@ public class MissionController {
 
     private JSONObject showMissionByInput(JSONObject dataJson) {
 
+        String tag1 = (String) dataJson.get("tag1");
+        String tag2 = (String) dataJson.get("tag2");
         String missionID = (String) dataJson.get("missionID");
-        if (missionID == null) {
+        if (missionID != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionById(missionID));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else if (tag1 != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionByTag(tag1,tag2));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        return new JSONObject() {{
-            put("data", userService.showMissionById(missionID));
-            put("code", 302);
-            put("msg", "指定查询任务成功");
-        }};
     }
 
     private JSONObject showAllMission() {

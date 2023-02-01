@@ -40,11 +40,13 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-
+        System.out.println(userService.showMissionByTag("测试1", null));
     }
 
     @Test
     void test() {
-        System.out.println(userHelper.getUserAllInfo("userid","U202116999"));
+
+
+
     }
 }

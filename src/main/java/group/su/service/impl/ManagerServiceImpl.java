@@ -196,4 +196,28 @@ public class ManagerServiceImpl implements ManagerService {
         Document document = mission.changeToDocument();
         missionDao.replaceMission("missionID", missionID, document);
     }
+
+    @Override
+    public Map<String, ArrayList<Map<String, String>>> getTotalStuffByDepartment() {
+
+        FindIterable<Document> documents = userDao.searchAllUsers();
+
+        Map<String, ArrayList<Map<String,String>>> map = new HashMap<>();
+
+        for (Document document : documents
+        ) {
+            String department = document.get("department", String.class);
+            if (!map.containsKey(department)) {
+                map.put(department, new ArrayList<>());
+            }
+            map.get(department).add(new HashMap<String, String>() {{
+                put("username", document.get("username", String.class));
+                put("userid", document.get("userid", String.class));
+                put("class", document.get("classStr", String.class));
+                put("identity", document.get("identity", String.class));
+            }});
+        }
+
+        return map;
+    }
 }

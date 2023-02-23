@@ -52,4 +52,10 @@ public class UserDaoImpl implements UserDao {
         userCollection.updateOne(filter, update);
     }
 
+    @Override
+    public FindIterable<Document> searchAllUsers() {
+
+        return userCollection.find();
+    }
+
 }

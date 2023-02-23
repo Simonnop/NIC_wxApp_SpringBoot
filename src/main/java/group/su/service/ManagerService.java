@@ -18,4 +18,6 @@ public interface ManagerService {
 
     void examineDraft(String missionID, String userid, String score,
                       String comment, String postscript, String ddl, String... tags);
+
+    Map<String, ArrayList<Map<String, String>>> getTotalStuffByDepartment();
 }

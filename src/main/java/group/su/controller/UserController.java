@@ -5,9 +5,11 @@ import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
 import group.su.service.helper.UserHelper;
+import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
 import group.su.service.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,10 +22,13 @@ public class UserController {
     private final UserServiceImpl userService;
     private final UserHelper userHelper;
 
+    private final ManagerServiceImpl managerService;
+
     @Autowired
-    public UserController(UserServiceImpl userService,UserHelper userHelper) {
+    public UserController(UserServiceImpl userService,UserHelper userHelper, ManagerServiceImpl managerService) {
         this.userService = userService;
         this.userHelper = userHelper;
+        this.managerService = managerService;
     }
 
     @RequestMapping("/NIC/login")
@@ -77,6 +82,36 @@ public class UserController {
         System.out.println(resultStr);
         return resultStr;
     }
+
+    @RequestMapping("/NIC/allUser")
+    public String allUserRequestDistributor(@RequestParam("method") String method,
+                                         @RequestParam("data") @Nullable String data,
+                                         HttpServletRequest req) throws UnsupportedEncodingException {
+        JSONObject result = new JSONObject();
+        JSONObject dataJson = JSONObject.parseObject(data);
+        try {
+            switch (method) {
+                case "showByGroup":
+                    result = showAllUserByGroup();
+                default:
+                    throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+            }
+        } catch (Exception e) {
+            ExceptionHandler.handleException(e, result, req, UserController.class);
+        }
+        String resultStr = result.toJSONString();
+        System.out.println(resultStr);
+        return resultStr;
+    }
+
+    private JSONObject showAllUserByGroup() {
+        return new JSONObject() {{
+            put("code", 602);
+            put("msg", "查询用户列表");
+            put("data", managerService.getTotalStuffByDepartment());
+        }};
+    }
+
 
     private JSONObject showMissionTakenResponse(JSONObject dataJson) {
         return new JSONObject() {{

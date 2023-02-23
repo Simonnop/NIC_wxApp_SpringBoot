@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,7 +41,9 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-
+        Map<String, ArrayList<Map<String, String>>> totalStuffByDepartment = managerService.getTotalStuffByDepartment();
+        System.out.println(totalStuffByDepartment);
+        
     }
 
     @Test

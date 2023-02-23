@@ -91,7 +91,7 @@ public class UserController {
         JSONObject dataJson = JSONObject.parseObject(data);
         try {
             switch (method) {
-                case "showByGroup":
+                case "showByGroup":  // TODO 待测试
                     result = showAllUserByGroup();
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);

@@ -64,4 +64,10 @@ public class MissionDaoImpl implements MissionDao {
         Bson filter = Filters.eq(filterField, filterValue);
         missionCollection.findOneAndReplace(filter, document);
     }
+
+    @Override
+    public <T> void deleteMissionByInput(String field, T value) {
+        Bson filter = Filters.eq(field, value);
+        missionCollection.deleteOne(filter);
+    }
 }

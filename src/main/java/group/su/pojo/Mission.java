@@ -29,12 +29,12 @@ public class Mission {
     ArrayList<String> files = new ArrayList<>();
 
     // 审核部分
-    ArrayList<String> layoutFiles = new ArrayList<>();
-    Map<String, Integer> score = new HashMap<>();
-    ArrayList<String> draftTags = new ArrayList<>();
-    Map<String, String> comments = new HashMap<>();
-    Map<String, String> postscript = new HashMap<>();
-    String deadline;
+    ArrayList<String> layoutFiles = new ArrayList<>();  // 排版文件
+    Map<String, Integer> score = new HashMap<>();  // 分数
+    ArrayList<String> draftTags = new ArrayList<>();  // 稿件的tag
+    Map<String, String> comments = new HashMap<>(); // 评论
+    Map<String, String> postscript = new HashMap<>(); // 备注
+    String deadline;  // 下一任务的ddl
 
 
     public void initializeMission() {

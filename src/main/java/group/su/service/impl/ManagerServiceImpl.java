@@ -15,8 +15,6 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -49,6 +47,26 @@ public class ManagerServiceImpl implements ManagerService {
         mission.setStatusChanger(statusChanger);
         // 添加任务
         missionDao.addMission(mission);
+    }
+
+    @Override
+    public void deleteMission(String missionID) {
+
+        missionDao.deleteMissionByInput("missionID", missionID);
+    }
+
+    @Override
+    public void alterMission(String missionID, Mission mission, String publisher) {
+        mission.initializeMission();
+        Map<String, String> statusChanger = mission.getStatusChanger();
+        statusChanger.put("发布任务", (String) userDao
+                .searchUserByInputEqual("userid", publisher).first()
+                .get("username"));
+        mission.setStatusChanger(statusChanger);
+        mission.setMissionID(missionID);
+
+        // 添加任务
+        missionDao.replaceMission("missionID",mission.getMissionID(),mission.changeToDocument());
     }
 
     @Override

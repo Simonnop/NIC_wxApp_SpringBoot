@@ -10,6 +10,10 @@ public interface ManagerService {
 
     void addMission(Mission mission, String publisher);
 
+    void deleteMission(String missionID);
+
+    void alterMission(String missionID, Mission mission, String publisher);
+
     ArrayList<Document> showMissionGotDraft();
 
     ArrayList<String> findAvailableReporters(String missionID, Integer... intervals);

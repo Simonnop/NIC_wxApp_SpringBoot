@@ -40,11 +40,17 @@ public class MissionController {
                 case "add":
                     result = addMissionResponse(dataJson);
                     break;
-                case "getTag":
+                case "getTag":  // TODO 待测试
                     result = getTagResponse(dataJson);
                     break;
-                case "examine":
+                case "examine":  // TODO 待测试
                     result = examineMissionResponse(dataJson);
+                    break;
+                case "delete":  // TODO 待测试
+                    result = deleteMissionResponse(dataJson);
+                    break;
+                case "alter":   // TODO 待测试
+                    result = alterMissionResponse(dataJson);
                     break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
@@ -112,6 +118,37 @@ public class MissionController {
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject alterMissionResponse(JSONObject dataJson) {
+
+        String missionID = String.valueOf(dataJson.get("missionID"));
+
+        int missionElement = Integer.parseInt(dataJson.get("element").toString());
+        String publisher = (String) dataJson.get("publisher");
+        // parseObject 参数要求是字符串
+        Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
+        mission.setElement(missionElement);
+
+        managerService.alterMission(missionID, mission, publisher);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "任务更改成功");
+            put("missionID", mission.getMissionID());
+        }};
+    }
+
+    private JSONObject deleteMissionResponse(JSONObject dataJson) {
+
+        String missionID = (String) dataJson.get("missionID");
+
+        managerService.deleteMission(missionID);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "任务删除成功");
+        }};
     }
 
     private JSONObject examineMissionResponse(JSONObject dataJson) {

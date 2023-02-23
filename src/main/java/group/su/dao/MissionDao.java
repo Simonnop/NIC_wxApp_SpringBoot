@@ -21,4 +21,6 @@ public interface MissionDao {
     <T, K> void updateInMission(String filterField, T filterValue, String updateField, K updateValue);
 
     <T> void replaceMission(String filterField, T filterValue, Document document);
+
+    <T> void deleteMissionByInput(String field, T value);
 }

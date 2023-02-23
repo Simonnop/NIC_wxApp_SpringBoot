@@ -172,7 +172,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void examineDraft(String missionID, String userid, String score,
-                             String comment, String... tags) {
+                             String comment, String postscript, String ddl, String... tags) {
         Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
         Mission mission = Mission.changeToMission(missionDoc);
         /*// 判断日期

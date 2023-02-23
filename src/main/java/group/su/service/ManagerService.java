@@ -20,5 +20,4 @@ public interface ManagerService {
                       String comment, String postscript, String ddl, String... tags);
 
     Map<String, ArrayList<Map<String, String>>> getTotalStuffByDepartment();
-                      String comment, String... tags);
 }

@@ -123,7 +123,7 @@ public class MissionController {
         if (userid == null || missionID == null) {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        managerService.examineDraft(missionID,userid,stars,review,tags);
+        managerService.examineDraft(missionID, userid, stars, review, null, null, tags);
 
         return new JSONObject() {{
             put("code", 402);

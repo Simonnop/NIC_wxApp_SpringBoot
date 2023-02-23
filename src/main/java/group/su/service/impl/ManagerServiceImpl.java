@@ -216,7 +216,12 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public Map<String, ArrayList<Map<String, String>>> getTotalStuffByDepartment() {
+    public Map<String, ArrayList<Map<String, String>>> getTotalStuffSortedByInput() {
+        return null;
+    }
+
+    @Override
+    public Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem) {
 
         FindIterable<Document> documents = userDao.searchAllUsers();
 
@@ -224,15 +229,16 @@ public class ManagerServiceImpl implements ManagerService {
 
         for (Document document : documents
         ) {
-            String department = document.get("department", String.class);
-            if (!map.containsKey(department)) {
-                map.put(department, new ArrayList<>());
+            String item = document.get(groupItem, String.class);
+            if (!map.containsKey(item)) {
+                map.put(item, new ArrayList<>());
             }
-            map.get(department).add(new HashMap<String, String>() {{
+            map.get(item).add(new HashMap<String, String>() {{
                 put("username", document.get("username", String.class));
                 put("userid", document.get("userid", String.class));
                 put("class", document.get("classStr", String.class));
                 put("identity", document.get("identity", String.class));
+                put("department", document.get("department", String.class));
             }});
         }
 

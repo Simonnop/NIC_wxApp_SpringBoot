@@ -91,8 +91,10 @@ public class UserController {
         JSONObject dataJson = JSONObject.parseObject(data);
         try {
             switch (method) {
-                case "showByGroup":  // TODO 待测试
-                    result = showAllUserByGroup();
+                case "grouped":  // TODO 待测试
+                    result = showAllUserGrouped(dataJson);
+                case "sorted":  // TODO 待做
+                    ;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -104,11 +106,13 @@ public class UserController {
         return resultStr;
     }
 
-    private JSONObject showAllUserByGroup() {
+    private JSONObject showAllUserGrouped(JSONObject dataJson) {
+
+        String groupItem = (String) dataJson.get("groupItem");
         return new JSONObject() {{
             put("code", 602);
             put("msg", "查询用户列表");
-            put("data", managerService.getTotalStuffByDepartment());
+            put("data", managerService.getTotalStuffGroupedByInput(groupItem));
         }};
     }
 

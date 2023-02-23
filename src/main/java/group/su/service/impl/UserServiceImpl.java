@@ -99,6 +99,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ArrayList<Document> showMissionByTag(String tag1,String tag2) {
+        FindIterable<Document> documents;
+        if (tag2 == null) {
+            documents = missionDao.searchMissionByInput("tag1", tag1);
+        } else {
+            documents = missionDao.searchMissionByInput("tag1", tag1, "tag2", tag2);
+        }
+        return missionManager.changeFormAndCalculate(documents);
+    }
+
+    @Override
     public ArrayList<Document> showTakenMission(String field, String value) {
 
         ArrayList<Document> documentArrayList = new ArrayList<>();
@@ -162,7 +173,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveFile(MultipartFile file, String missionID, String userid) {
+    public void saveFile(MultipartFile file, String missionID, String userid, String identity) {
 
         String fileName = missionID+"_"+file.getOriginalFilename(); //获取上传文件原来的名称
         String filePath = "C:\\ProgramData\\NIC\\work_files";

@@ -43,11 +43,14 @@ class NicWxAppSpringBootApplicationTests {
     void get() {
         Map<String, ArrayList<Map<String, String>>> totalStuffByDepartment = managerService.getTotalStuffByDepartment();
         System.out.println(totalStuffByDepartment);
-        
+
+        System.out.println(userService.showMissionByTag("测试1", null));
     }
 
     @Test
     void test() {
-        System.out.println(userHelper.getUserAllInfo("userid","U202116999"));
+
+
+
     }
 }

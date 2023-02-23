@@ -172,10 +172,10 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void examineDraft(String missionID, String userid, String score,
-                             String comment, String postscript, String ddl, String... tags) {
+                             String comment, String... tags) {
         Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
         Mission mission = Mission.changeToMission(missionDoc);
-        // 判断日期
+        /*// 判断日期
         Date oldDate;
         Date newDate;
         try {
@@ -187,7 +187,7 @@ public class ManagerServiceImpl implements ManagerService {
         if (newDate.compareTo(oldDate) < 0) {
             mission.setDeadline(ddl);
         }
-        mission.setDeadline(ddl);
+        mission.setDeadline(ddl);*/
 
         mission.getComments().put(userid, comment);
         mission.getDraftTags().addAll(Arrays.asList(tags));

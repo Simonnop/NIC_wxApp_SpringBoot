@@ -43,6 +43,9 @@ public class MissionController {
                 case "getTag":
                     result = getTagResponse(dataJson);
                     break;
+                case "examine":
+                    result = examineMissionResponse(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -111,6 +114,23 @@ public class MissionController {
         return resultStr;
     }
 
+    private JSONObject examineMissionResponse(JSONObject dataJson) {
+        String userid = (String) dataJson.get("userid");
+        String missionID = (String) dataJson.get("missionID");
+        String stars = (String) dataJson.get("stars");
+        String review = (String) dataJson.get("review");
+        String[] tags = dataJson.getObject("tag", String[].class);
+        if (userid == null || missionID == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        managerService.examineDraft(missionID,userid,stars,review,tags);
+
+        return new JSONObject() {{
+            put("code", 402);
+            put("msg", "提交审核成功");
+        }};
+    }
+
     private JSONObject takeMission(JSONObject dataJson) {
 
         String userid = (String) dataJson.get("userid");
@@ -133,15 +153,24 @@ public class MissionController {
 
     private JSONObject showMissionByInput(JSONObject dataJson) {
 
+        String tag1 = (String) dataJson.get("tag1");
+        String tag2 = (String) dataJson.get("tag2");
         String missionID = (String) dataJson.get("missionID");
-        if (missionID == null) {
+        if (missionID != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionById(missionID));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else if (tag1 != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionByTag(tag1,tag2));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        return new JSONObject() {{
-            put("data", userService.showMissionById(missionID));
-            put("code", 302);
-            put("msg", "指定查询任务成功");
-        }};
     }
 
     private JSONObject showAllMission() {

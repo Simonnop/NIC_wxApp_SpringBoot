@@ -25,5 +25,5 @@ public interface ManagerService {
 
     Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem);
 
-    Map<String, ArrayList<Map<String, String>>> getTotalStuffSortedByInput();
+    Map<String, ArrayList<Document>> getTotalStuffSortedByInput(String sortItem);
 }

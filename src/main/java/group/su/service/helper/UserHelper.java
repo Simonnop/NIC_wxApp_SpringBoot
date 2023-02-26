@@ -53,4 +53,19 @@ public class UserHelper {
 
         return userInfo;
     }
+
+    public Document getUserInfoInMission(String field, String value) {
+
+        Document userAllInfo = getUserAllInfo(field, value);
+
+        String[] fields = {"username","classStr","tel","QQ","userid"};
+
+        return new Document() {{
+            for (String field : fields
+            ) {
+                put(field, userAllInfo.get(field));
+            }
+        }};
+    }
+
 }

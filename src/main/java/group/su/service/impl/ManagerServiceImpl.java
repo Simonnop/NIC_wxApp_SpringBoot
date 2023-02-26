@@ -15,7 +15,9 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.Collator;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -66,7 +68,7 @@ public class ManagerServiceImpl implements ManagerService {
         mission.setMissionID(missionID);
 
         // 添加任务
-        missionDao.replaceMission("missionID",mission.getMissionID(),mission.changeToDocument());
+        missionDao.replaceMission("missionID", mission.getMissionID(), mission.changeToDocument());
     }
 
     @Override
@@ -216,8 +218,37 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public Map<String, ArrayList<Map<String, String>>> getTotalStuffSortedByInput() {
-        return null;
+    public Map<String, ArrayList<Document>> getTotalStuffSortedByInput(String sortItem) {
+
+        FindIterable<Document> documents = userDao.searchAllUsers();
+        Comparator cmp;
+        String[] fields = {"username", "classStr", "tel", "QQ", "userid", "department"};
+
+        switch (sortItem) {
+            case "username":
+                cmp = Collator.getInstance(Locale.CHINA);
+                break;
+            default:
+                throw new AppRuntimeException(ExceptionKind.NO_SORT_KEY);
+        }
+
+        Map<String, ArrayList<Document>> NameIdMap = new TreeMap<String, ArrayList<Document>>(cmp) {{
+            for (Document document : documents) {
+                String item = document.get(sortItem, String.class);
+                if (!containsKey(item)) {
+                    put(item, new ArrayList<>());
+                }
+                Document info = new Document() {{
+                    for (String field : fields
+                    ) {
+                        put(field, document.get(field));
+                    }
+                }};
+                get(item).add(info);
+            }
+        }};
+
+        return NameIdMap;
     }
 
     @Override
@@ -225,7 +256,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         FindIterable<Document> documents = userDao.searchAllUsers();
 
-        Map<String, ArrayList<Map<String,String>>> map = new HashMap<>();
+        Map<String, ArrayList<Map<String, String>>> map = new HashMap<>();
 
         for (Document document : documents
         ) {

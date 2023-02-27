@@ -12,6 +12,7 @@ import group.su.service.ManagerService;
 import group.su.service.helper.MissionHelper;
 import group.su.service.util.TimeUtil;
 import org.bson.Document;
+import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -223,10 +224,21 @@ public class ManagerServiceImpl implements ManagerService {
         FindIterable<Document> documents = userDao.searchAllUsers();
         Comparator cmp;
         String[] fields = {"username", "classStr", "tel", "QQ", "userid", "department"};
+        Class clazz;
 
         switch (sortItem) {
             case "username":
                 cmp = Collator.getInstance(Locale.CHINA);
+                clazz = String.class;
+                break;
+            case "innerId":
+                cmp = new Comparator<String>() {
+                    @Override
+                    public int compare(String code1, String code2) {
+                        return Integer.valueOf(code1).compareTo(Integer.valueOf(code2));
+                    }
+                };
+                clazz = Integer.class;
                 break;
             default:
                 throw new AppRuntimeException(ExceptionKind.NO_SORT_KEY);
@@ -234,7 +246,9 @@ public class ManagerServiceImpl implements ManagerService {
 
         Map<String, ArrayList<Document>> NameIdMap = new TreeMap<String, ArrayList<Document>>(cmp) {{
             for (Document document : documents) {
-                String item = document.get(sortItem, String.class);
+
+                String item = String.valueOf(document.get(sortItem, clazz));
+
                 if (!containsKey(item)) {
                     put(item, new ArrayList<>());
                 }

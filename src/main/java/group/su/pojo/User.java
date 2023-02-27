@@ -23,6 +23,12 @@ public class User {
     ArrayList<String> missionTaken;
     ArrayList<Map<String, String>> missionCompleted;
 
+    int gender;
+    int month_performance;
+    int total_performance;
+    String department;
+    int innerId;
+
     public org.bson.Document changeToDocument() {
         org.bson.Document doc = new org.bson.Document();
         Field[] fields = this.getClass().getDeclaredFields();

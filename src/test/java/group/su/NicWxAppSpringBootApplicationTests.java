@@ -39,7 +39,8 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-        managerService.thrashBack("2023011915");
+        managerService.examineDraftByEditor("2023011915","U202116999",
+                "10","可以","可爱捏","可爱");
 
     }
 

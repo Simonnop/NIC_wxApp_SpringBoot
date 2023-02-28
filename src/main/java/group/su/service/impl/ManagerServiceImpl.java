@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.Collator;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -192,8 +193,8 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public void examineDraft(String missionID, String userid, String score,
-                             String comment, String postscript, String ddl, String... tags) {
+    public void examineDraftByEditor(String missionID, String userid, String score,
+                                     String comment,  String... tags) {
         Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
         Mission mission = Mission.changeToMission(missionDoc);
         /*// 判断日期
@@ -212,8 +213,9 @@ public class ManagerServiceImpl implements ManagerService {
 
         mission.getComments().put(userid, comment);
         mission.getDraftTags().addAll(Arrays.asList(tags));
-        mission.getPostscript().put(userid, comment);
         mission.getScore().put(userid, Integer.valueOf(score));
+        mission.getStatus().put("编辑部审稿",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         Document document = mission.changeToDocument();
         missionDao.replaceMission("missionID", missionID, document);
     }
@@ -274,9 +276,13 @@ public class ManagerServiceImpl implements ManagerService {
         Map<String, String> status = document.get("status", Map.class);
         String undo = "未达成";
         if (status.get("编辑部审稿").equals(undo)) {
-            missionDao.updateInMission("missionID", missionID,"status.写稿","未达成");
+            missionDao.updateInMission(
+                    "missionID", missionID,
+                    "status.写稿","未达成");
         } else if (status.get("辅导员审核").equals(undo)) {
-            missionDao.updateInMission("missionID", missionID,"status.编辑部审稿","未达成");
+            missionDao.updateInMission(
+                    "missionID", missionID,
+                    "status.编辑部审稿","未达成");
         }
     }
 

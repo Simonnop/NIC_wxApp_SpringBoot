@@ -20,8 +20,8 @@ public interface ManagerService {
 
     Map<String, Integer> findAvailableTime(int week);
 
-    void examineDraft(String missionID, String userid, String score,
-                      String comment, String postscript, String ddl, String... tags);
+    void examineDraftByEditor(String missionID, String userid, String score,
+                              String comment, String... tags);
 
     Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem);
 

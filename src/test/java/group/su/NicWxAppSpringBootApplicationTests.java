@@ -39,8 +39,8 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-        Document userInfoInMission = userHelper.getUserInfoInMission("userid", "U202116999");
-        System.out.println(userInfoInMission);
+        managerService.thrashBack("2023011915");
+
     }
 
     @Test

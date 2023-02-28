@@ -26,4 +26,6 @@ public interface ManagerService {
     Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem);
 
     Map<String, ArrayList<Document>> getTotalStuffSortedByInput(String sortItem);
+
+    void thrashBack(String missionID);
 }

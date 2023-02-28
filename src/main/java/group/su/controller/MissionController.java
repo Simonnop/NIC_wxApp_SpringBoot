@@ -52,6 +52,9 @@ public class MissionController {
                 case "alter":   // TODO 待测试
                     result = alterMissionResponse(dataJson);
                     break;
+                case "return":   // TODO 待测试
+                    result = returnMissionResponse(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -120,6 +123,17 @@ public class MissionController {
         return resultStr;
     }
 
+    private JSONObject returnMissionResponse(JSONObject dataJson) {
+
+        String missionID = String.valueOf(dataJson.get("missionID"));
+        managerService.thrashBack(missionID);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "打回操作成功");
+        }};
+    }
+
     private JSONObject alterMissionResponse(JSONObject dataJson) {
 
         String missionID = String.valueOf(dataJson.get("missionID"));
@@ -135,14 +149,12 @@ public class MissionController {
         return new JSONObject() {{
             put("code", 202);
             put("msg", "任务更改成功");
-            put("missionID", mission.getMissionID());
         }};
     }
 
     private JSONObject deleteMissionResponse(JSONObject dataJson) {
 
         String missionID = (String) dataJson.get("missionID");
-
         managerService.deleteMission(missionID);
 
         return new JSONObject() {{

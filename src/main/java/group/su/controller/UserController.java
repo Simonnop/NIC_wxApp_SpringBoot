@@ -93,8 +93,8 @@ public class UserController {
             switch (method) {
                 case "grouped":  // TODO 待测试
                     result = showAllUserGrouped(dataJson);
-                case "sorted":  // TODO 待做
-                    ;
+                case "sorted":  // TODO 待测试
+                    result = showAllUserSorted(dataJson);
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -106,12 +106,21 @@ public class UserController {
         return resultStr;
     }
 
+    private JSONObject showAllUserSorted(JSONObject dataJson) {
+        String sortItem = (String) dataJson.get("sortItem");
+        return new JSONObject() {{
+            put("code", 602);
+            put("msg", "查询用户列表成功");
+            put("data", managerService.getTotalStuffSortedByInput(sortItem));
+        }};
+    }
+
     private JSONObject showAllUserGrouped(JSONObject dataJson) {
 
         String groupItem = (String) dataJson.get("groupItem");
         return new JSONObject() {{
             put("code", 602);
-            put("msg", "查询用户列表");
+            put("msg", "查询用户列表成功");
             put("data", managerService.getTotalStuffGroupedByInput(groupItem));
         }};
     }

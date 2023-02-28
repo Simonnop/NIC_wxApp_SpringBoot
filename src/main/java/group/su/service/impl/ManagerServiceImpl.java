@@ -266,6 +266,21 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
+    public void thrashBack(String missionID) {
+        Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+        if (document == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        Map<String, String> status = document.get("status", Map.class);
+        String undo = "未达成";
+        if (status.get("编辑部审稿").equals(undo)) {
+            missionDao.updateInMission("missionID", missionID,"status.写稿","未达成");
+        } else if (status.get("辅导员审核").equals(undo)) {
+            missionDao.updateInMission("missionID", missionID,"status.编辑部审稿","未达成");
+        }
+    }
+
+    @Override
     public Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem) {
 
         FindIterable<Document> documents = userDao.searchAllUsers();

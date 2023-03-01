@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionHandler;
 import group.su.exception.ExceptionKind;
+import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -20,16 +21,19 @@ public class FileController {
 
     private final UserServiceImpl userService;
 
+    private final ManagerServiceImpl managerService;
+
     @Autowired
-    public FileController(UserServiceImpl userService) {
+    public FileController(UserServiceImpl userService,ManagerServiceImpl managerService) {
         this.userService = userService;
+        this.managerService = managerService;
     }
 
     @RequestMapping("NIC/upload")
     public String multiUpload(@RequestParam("file") MultipartFile[] files,
                               @RequestParam("missionID") String missionID,
                               @RequestParam("userid") String userid,
-                              @RequestParam("identity") @Nullable String identity,
+                              @RequestParam("kind") @Nullable String kind,
                               HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         try {
@@ -38,7 +42,13 @@ public class FileController {
             }
             // 这种方法可以保存多个文件
             for (MultipartFile multipartFile : files) {
-                userService.saveFile(multipartFile, missionID, userid, identity);
+                if (kind == null) {
+                    userService.saveFile(multipartFile, missionID, userid);
+                } else if (kind.equals("layout")) {
+                    managerService.saveLayoutFiles(multipartFile, missionID, userid);
+                } else {
+                    throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+                }
             }
             result.put("code", 502);
             result.put("msg", "文件上传成功");

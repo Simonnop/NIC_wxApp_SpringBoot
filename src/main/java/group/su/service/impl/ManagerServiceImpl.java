@@ -15,7 +15,10 @@ import org.bson.Document;
 import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -86,6 +89,10 @@ public class ManagerServiceImpl implements ManagerService {
         documentArrayList.removeIf(document -> ((Document) document
                 .get("status"))
                 .get("写稿")
+                .equals("未达成")
+                ||!((Document) document
+                .get("status"))
+                .get("编辑部审稿")
                 .equals("未达成"));
         return documentArrayList;
     }
@@ -210,6 +217,10 @@ public class ManagerServiceImpl implements ManagerService {
             mission.setDeadline(ddl);
         }
         mission.setDeadline(ddl);*/
+        mission.getStatusChanger().put("编辑部审稿",
+                userDao.searchUserByInputEqual("userid", userid)
+                        .first()
+                        .get("username", String.class));
 
         mission.getComments().put(userid, comment);
         mission.getDraftTags().addAll(Arrays.asList(tags));
@@ -218,6 +229,31 @@ public class ManagerServiceImpl implements ManagerService {
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         Document document = mission.changeToDocument();
         missionDao.replaceMission("missionID", missionID, document);
+    }
+
+    @Override
+    public void saveLayoutFiles(MultipartFile file, String missionID, String userid) {
+
+        String fileName = missionID+"_layout_"+file.getOriginalFilename(); //获取上传文件原来的名称
+        String filePath = "C:\\ProgramData\\NIC\\work_files";
+        File temp = new File(filePath);
+        if (!temp.exists()) {
+            temp.mkdirs();
+        }
+
+        File localFile = new File(filePath + File.separator + fileName);
+        try {
+            file.transferTo(localFile); //把上传的文件保存至本地
+        } catch (IOException e) {
+            throw new AppRuntimeException(ExceptionKind.SAME_FILE_ERROR);
+        }
+        new Thread(() -> {
+            // 将文件名保存到对应的任务下
+            missionDao.addToSetInMission(
+                    "missionID", missionID,
+                    "layoutFiles", fileName);
+
+        });
     }
 
     @Override
@@ -284,6 +320,22 @@ public class ManagerServiceImpl implements ManagerService {
                     "missionID", missionID,
                     "status.编辑部审稿","未达成");
         }
+    }
+
+    @Override
+    public void uploadArticleURL(String missionID, String userid, String url) {
+
+        Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+        if (document == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        document.put("articleURL", url);
+        document.get("statusChanger", Document.class).put("排版",
+                userDao.searchUserByInputEqual("userid", userid)
+                        .first()
+                        .get("username", String.class));
+        document.get("status", Document.class).put("排版",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
     }
 
     @Override

@@ -39,9 +39,11 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-        managerService.examineDraftByEditor("2023011915","U202116999",
-                "10","可以","可爱捏","可爱");
+        ArrayList<Document> documents = managerService.showMissionGotDraft();
 
+        for (Document document : documents) {
+            System.out.println(document);
+        }
     }
 
     @Test

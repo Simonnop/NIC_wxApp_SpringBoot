@@ -112,6 +112,9 @@ public class MissionController {
                 case "quit":
                     result = quitMission(dataJson);
                     break;
+                case "uploadURL":
+                    result = uploadArticleURL(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -121,6 +124,18 @@ public class MissionController {
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject uploadArticleURL(JSONObject dataJson) {
+        String missionID = String.valueOf(dataJson.get("missionID"));
+        String userid = String.valueOf(dataJson.get("userid"));
+        String url = String.valueOf(dataJson.get("url"));
+        managerService.uploadArticleURL(missionID, userid, url);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "URL上传成功");
+        }};
     }
 
     private JSONObject returnMissionResponse(JSONObject dataJson) {

@@ -23,7 +23,7 @@ public interface UserService {
 
     void tryGetMission(String userid, String missionID, String kind);
 
-    void saveFile(MultipartFile file, String missionID, String userid, String identity);
+    void saveFile(MultipartFile file, String missionID, String userid);
 
     ArrayList<String> showTag(String... str);
 

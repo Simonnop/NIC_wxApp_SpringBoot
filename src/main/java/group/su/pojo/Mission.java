@@ -36,6 +36,8 @@ public class Mission {
     Map<String, String> postscript = new HashMap<>(); // 备注
     String deadline;  // 下一任务的ddl
 
+    String articleURL;
+
 
     public void initializeMission() {
         this.status = new HashMap<String, String>() {{

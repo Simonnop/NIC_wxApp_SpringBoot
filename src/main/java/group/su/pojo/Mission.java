@@ -141,12 +141,15 @@ public class Mission {
     public String initDataCode() {
         String gap1 = "";
         String gap2 = "";
+        String gap3 = "";
         if (time == null) {
             Calendar calendar = Calendar.getInstance();
             time = new HashMap<>();
             time.put("year", calendar.get(Calendar.YEAR));
             time.put("month", calendar.get(Calendar.MONTH) + 1);
             time.put("day", calendar.get(Calendar.DATE));
+            time.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
+            time.put("minute", calendar.get(Calendar.MINUTE));
         }
         if (time.get("month") < 10) {
             gap1 = "0";
@@ -154,6 +157,10 @@ public class Mission {
         if (time.get("day") < 10) {
             gap2 = "0";
         }
-        return "" + time.get("year") + gap1 + time.get("month") + gap2 + time.get("day");
+        if (time.get("hour") < 10) {
+            gap3 = "0";
+        }
+        return "" + time.get("year") + gap1 + time.get("month") + gap2 +
+                time.get("day") + gap3 + time.get("hour") + time.get("minute");
     }
 }

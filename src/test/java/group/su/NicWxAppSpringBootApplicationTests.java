@@ -2,10 +2,12 @@ package group.su;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mongodb.client.FindIterable;
+import group.su.dao.MissionDao;
 import group.su.dao.impl.MissionDaoImpl;
 import group.su.dao.impl.UserDaoImpl;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
+import group.su.pojo.Mission;
 import group.su.service.ManagerService;
 import group.su.service.UserService;
 import group.su.service.helper.UserHelper;
@@ -49,17 +51,8 @@ class NicWxAppSpringBootApplicationTests {
     @Test
     void test() {
 
-        String sortItem = "username";
-
-        Map<String, ArrayList<Document>> totalStuffSortedByInput = managerService.getTotalStuffSortedByInput(sortItem);
-
-        System.out.println(totalStuffSortedByInput.toString());
-
-        String a = new JSONObject() {{
-            put("a", totalStuffSortedByInput);
-        }}.toJSONString();
-
-        System.out.println(a);
+        String s = new Mission().initDataCode();
+        System.out.println(s);
 
     }
 }

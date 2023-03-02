@@ -19,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -322,10 +325,17 @@ public class ManagerServiceImpl implements ManagerService {
         if (document == null) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
+        try {
+            new URL(url).openStream();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppRuntimeException(ExceptionKind.WRONG_URL);
+        }
         document.put("articleURL", url);
         document.get("statusChanger", Document.class).put("排版", userid);
         document.get("status", Document.class).put("排版",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        missionDao.replaceMission("missionID", missionID, document);
     }
 
     @Override

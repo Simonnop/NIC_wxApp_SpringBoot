@@ -51,8 +51,7 @@ class NicWxAppSpringBootApplicationTests {
     @Test
     void test() {
 
-        String s = new Mission().initDataCode();
-        System.out.println(s);
+        System.out.println(userService.showTag());
 
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
 
@@ -25,7 +26,7 @@ public interface UserService {
 
     void saveFile(MultipartFile file, String missionID, String userid);
 
-    ArrayList<String> showTag(String... str);
+    Map<String,ArrayList<String>> showTag();
 
     ArrayList<Document> showLessons(String userid, Integer... week);
 

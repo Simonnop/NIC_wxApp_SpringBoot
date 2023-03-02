@@ -23,9 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -222,13 +220,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ArrayList<String> showTag(String... str) {
+    public Map<String,ArrayList<String>> showTag() {
         Document document = configDao.showItemByInput("item", "tag").first();
-        if (str.length == 0) {
-            return (ArrayList<String>) document.getList("firstLayer", String.class);
-        } else {
-            return (ArrayList<String>) document.getList(str[0], String.class);
-        }
+        return new HashMap<String, ArrayList<String>>() {{
+            for (String firstLayer : document.getList("firstLayer", String.class)) {
+                put(firstLayer, new ArrayList<String>() {{
+                    for (String s : document.getList(firstLayer, String.class)) {
+                        add(s);
+                    }
+                }});
+            }
+        }};
     }
 
     @Override

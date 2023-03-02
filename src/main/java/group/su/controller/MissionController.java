@@ -31,7 +31,7 @@ public class MissionController {
 
     @RequestMapping("/NIC/manage")
     public String manageRequestDistributor(@RequestParam("method") String method,
-                                           @RequestParam("data") String data,
+                                           @RequestParam("data") @Nullable String data,
                                            HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);
@@ -41,7 +41,7 @@ public class MissionController {
                     result = addMissionResponse(dataJson);
                     break;
                 case "getTag":  // TODO 待测试
-                    result = getTagResponse(dataJson);
+                    result = getTagResponse();
                     break;
                 case "examine":  // TODO 待测试
                     result = examineMissionResponse(dataJson);
@@ -279,9 +279,12 @@ public class MissionController {
         }};
     }
 
-
-    private JSONObject getTagResponse(JSONObject dataJson) {
-        return new JSONObject();
+    private JSONObject getTagResponse() {
+        return new JSONObject(){{
+            put("code", 302);
+            put("msg", "查询tag成功");
+            put("data", userService.showTag());
+        }};
     }
 
 }

@@ -48,9 +48,7 @@ public class ManagerServiceImpl implements ManagerService {
         // 初始化任务id与状态
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
-        statusChanger.put("发布任务", (String) userDao
-                .searchUserByInputEqual("userid", userid).first()
-                .get("username"));
+        statusChanger.put("发布任务", userid);
         mission.setStatusChanger(statusChanger);
         // 添加任务
         missionDao.addMission(mission);
@@ -66,9 +64,7 @@ public class ManagerServiceImpl implements ManagerService {
     public void alterMission(String missionID, Mission mission, String publisher) {
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
-        statusChanger.put("发布任务", (String) userDao
-                .searchUserByInputEqual("userid", publisher).first()
-                .get("username"));
+        statusChanger.put("发布任务",publisher);
         mission.setStatusChanger(statusChanger);
         mission.setMissionID(missionID);
 
@@ -217,10 +213,7 @@ public class ManagerServiceImpl implements ManagerService {
             mission.setDeadline(ddl);
         }
         mission.setDeadline(ddl);*/
-        mission.getStatusChanger().put("编辑部审稿",
-                userDao.searchUserByInputEqual("userid", userid)
-                        .first()
-                        .get("username", String.class));
+        mission.getStatusChanger().put("编辑部审稿", userid);
 
         mission.getComments().put(userid, comment);
         mission.getDraftTags().addAll(Arrays.asList(tags));
@@ -330,10 +323,7 @@ public class ManagerServiceImpl implements ManagerService {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
         document.put("articleURL", url);
-        document.get("statusChanger", Document.class).put("排版",
-                userDao.searchUserByInputEqual("userid", userid)
-                        .first()
-                        .get("username", String.class));
+        document.get("statusChanger", Document.class).put("排版", userid);
         document.get("status", Document.class).put("排版",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
     }

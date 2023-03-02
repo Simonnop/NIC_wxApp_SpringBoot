@@ -10,6 +10,7 @@ import group.su.exception.ExceptionKind;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
 import group.su.service.UserService;
+import group.su.service.helper.MissionHelper;
 import group.su.service.helper.UserHelper;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class NicWxAppSpringBootApplicationTests {
     MissionDaoImpl missionDao;
     @Autowired
     UserHelper userHelper;
+    @Autowired
+    MissionHelper missionHelper;
 
     @Test
     void contextLoads() {
@@ -51,7 +54,10 @@ class NicWxAppSpringBootApplicationTests {
     @Test
     void test() {
 
-        System.out.println(userService.showTag());
+        System.out.println(
+                missionHelper.showUserInfoInMission(
+                        missionDao.searchMissionByInput(
+                                "missionID", "2023010319").first()));
 
     }
 }

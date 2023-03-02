@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ArrayList<Document> showMissionByTag(String tag1,String tag2) {
+    public ArrayList<Document> showMissionByTag(String tag1, String tag2) {
         FindIterable<Document> documents;
         if (tag2 == null) {
             documents = missionDao.searchMissionByInput("tag1", tag1);
@@ -173,7 +173,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveFile(MultipartFile file, String missionID, String userid) {
 
-        String fileName = missionID+"_"+file.getOriginalFilename(); //获取上传文件原来的名称
+        String fileName = missionID + "_" + file.getOriginalFilename(); //获取上传文件原来的名称
         String filePath = "C:\\ProgramData\\NIC\\work_files";
         File temp = new File(filePath);
         if (!temp.exists()) {
@@ -206,10 +206,7 @@ public class UserServiceImpl implements UserService {
             // 存储更改者姓名
             missionDao.updateInMission(
                     "missionID", missionID,
-                    "statusChanger.写稿",
-                    userDao.searchUserByInputEqual("userid",userid)
-                            .first()
-                            .get("username"));
+                    "statusChanger.写稿", userid);
             // 将 missionID 加入 user 的 missionCompleted 下
                         /*for (Document document : userDao.searchUserByInputContain("missionTaken", missionID)) {
                             userDao.addToSetInUser(
@@ -220,7 +217,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String,ArrayList<String>> showTag() {
+    public Map<String, ArrayList<String>> showTag() {
         Document document = configDao.showItemByInput("item", "tag").first();
         return new HashMap<String, ArrayList<String>>() {{
             for (String firstLayer : document.getList("firstLayer", String.class)) {
@@ -259,7 +256,7 @@ public class UserServiceImpl implements UserService {
             if (document == null) {
                 continue;
             }
-            if (!(document.get("status",Document.class))
+            if (!(document.get("status", Document.class))
                     .get("写稿")
                     .equals("未达成")) {
                 documentArrayList.add(missionManager.calculateLack(document));

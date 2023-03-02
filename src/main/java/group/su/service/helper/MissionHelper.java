@@ -11,6 +11,7 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,11 +21,13 @@ public class MissionHelper {
 
     final UserDao userDao;
     final MissionDao missionDao;
+    final UserHelper userHelper;
 
     @Autowired
-    public MissionHelper(UserDao userDao, MissionDao missionDao) {
+    public MissionHelper(UserDao userDao, MissionDao missionDao, UserHelper userHelper) {
         this.userDao = userDao;
         this.missionDao = missionDao;
+        this.userHelper = userHelper;
     }
 
     public void updateMissionStatus(String missionID) {
@@ -72,6 +75,31 @@ public class MissionHelper {
                     - reporters.getList(str, String.class).size());
         }
         document.put("reporterLack", reporterLack);
+
+        return document;
+    }
+
+    public Document showUserInfoInMission(Document document) {
+
+        Document reporters = document.get("reporters", Document.class);
+        Document statusChanger = document.get("statusChanger", Document.class);
+
+        for (String kind : reporters.keySet()) {
+            reporters.getList(kind, String.class).replaceAll(
+                    (userid) -> String.valueOf(userHelper.getUserInfoInMission("userid", userid)));
+        }
+        for (String kind : statusChanger.keySet()) {
+            String s = statusChanger.get(kind, String.class);
+            if (s == null || s.equals("")) {
+                continue;
+            }
+            if (s.startsWith("U")) {
+                statusChanger.put(kind, userHelper.getUserInfoInMission("userid", s));
+            } else {
+                statusChanger.put(kind, userHelper.getUserInfoInMission("username", s));
+            }
+
+        }
 
         return document;
     }

@@ -12,7 +12,6 @@ import group.su.service.ManagerService;
 import group.su.service.helper.MissionHelper;
 import group.su.service.util.TimeUtil;
 import org.bson.Document;
-import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,12 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -67,7 +64,7 @@ public class ManagerServiceImpl implements ManagerService {
     public void alterMission(String missionID, Mission mission, String publisher) {
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
-        statusChanger.put("发布任务",publisher);
+        statusChanger.put("发布任务", publisher);
         mission.setStatusChanger(statusChanger);
         mission.setMissionID(missionID);
 
@@ -89,9 +86,29 @@ public class ManagerServiceImpl implements ManagerService {
                 .get("status"))
                 .get("写稿")
                 .equals("未达成")
-                ||!((Document) document
+                || !((Document) document
                 .get("status"))
                 .get("编辑部审稿")
+                .equals("未达成"));
+        return documentArrayList;
+    }
+
+    @Override
+    public ArrayList<Document> showMissionGotDraftToTeacher() {
+        FindIterable<Document> documents = missionDao.showAll();
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        ArrayList<Document> documentArrayList = missionManager.changeFormAndCalculate(documents);
+
+        // 判断是否缺人
+        documentArrayList.removeIf(document -> ((Document) document
+                .get("status"))
+                .get("编辑部审稿")
+                .equals("未达成")
+                || !((Document) document
+                .get("status"))
+                .get("辅导员审核")
                 .equals("未达成"));
         return documentArrayList;
     }
@@ -200,7 +217,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void examineDraftByEditor(String missionID, String userid, String score,
-                                     String comment,  String... tags) {
+                                     String comment, String... tags) {
         Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
         Mission mission = Mission.changeToMission(missionDoc);
         /*// 判断日期
@@ -228,9 +245,37 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
+    public void examineDraftByTeacher(String missionID, String userid, String score, String comment, String... tags) {
+        Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
+        Mission mission = Mission.changeToMission(missionDoc);
+        /*// 判断日期
+        Date oldDate;
+        Date newDate;
+        try {
+            oldDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(mission.getDeadline());
+            newDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ddl);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        if (newDate.compareTo(oldDate) < 0) {
+            mission.setDeadline(ddl);
+        }
+        mission.setDeadline(ddl);*/
+        mission.getStatusChanger().put("辅导员审核", userid);
+
+        mission.getComments().put(userid, comment);
+        mission.getDraftTags().addAll(Arrays.asList(tags));
+        mission.getScore().put(userid, Integer.valueOf(score));
+        mission.getStatus().put("辅导员审核",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        Document document = mission.changeToDocument();
+        missionDao.replaceMission("missionID", missionID, document);
+    }
+
+    @Override
     public void saveLayoutFiles(MultipartFile file, String missionID, String userid) {
 
-        String fileName = missionID+"_layout_"+file.getOriginalFilename(); //获取上传文件原来的名称
+        String fileName = missionID + "_layout_" + file.getOriginalFilename(); //获取上传文件原来的名称
         String filePath = "C:\\ProgramData\\NIC\\work_files";
         File temp = new File(filePath);
         if (!temp.exists()) {
@@ -310,11 +355,11 @@ public class ManagerServiceImpl implements ManagerService {
         if (status.get("编辑部审稿").equals(undo)) {
             missionDao.updateInMission(
                     "missionID", missionID,
-                    "status.写稿","未达成");
+                    "status.写稿", "未达成");
         } else if (status.get("辅导员审核").equals(undo)) {
             missionDao.updateInMission(
                     "missionID", missionID,
-                    "status.编辑部审稿","未达成");
+                    "status.编辑部审稿", "未达成");
         }
     }
 
@@ -325,12 +370,14 @@ public class ManagerServiceImpl implements ManagerService {
         if (document == null) {
             throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
         }
-        try {
-            new URL(url).openStream();
+
+        // InputStream 继承了 AutoCloseable, try 后可以自动关闭
+        try(InputStream ignored = new URL(url).openStream()) {
+            ;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new AppRuntimeException(ExceptionKind.WRONG_URL);
         }
+
         document.put("articleURL", url);
         document.get("statusChanger", Document.class).put("排版", userid);
         document.get("status", Document.class).put("排版",

@@ -105,6 +105,9 @@ public class MissionHelper {
     }
 
     public ArrayList<Document> findSimilarMission(String... tags) {
+
+        // TODO 改了结构,要重新写
+
         FindIterable<Document> documents;
         if (tags.length == 1) {
             documents = missionDao.searchMissionByInput("tag1", tags[0]);

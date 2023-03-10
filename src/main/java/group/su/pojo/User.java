@@ -23,11 +23,25 @@ public class User {
     ArrayList<String> missionTaken;
     ArrayList<Map<String, String>> missionCompleted;
 
+
     int gender;
     int month_performance;
     int total_performance;
     String department;
     int innerId;
+
+//    以下为微信用户属性
+    String openid;          //微信用户唯一标示
+    String session_key;
+//    String session_key;
+//    String nickName;
+//    String province;
+//    String city;
+//    String country;
+
+
+
+
 
     public org.bson.Document changeToDocument() {
         org.bson.Document doc = new org.bson.Document();

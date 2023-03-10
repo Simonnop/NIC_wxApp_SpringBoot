@@ -29,6 +29,7 @@ public class MissionController {
         this.userService = userService;
     }
 
+
     @RequestMapping("/NIC/manage")
     public String manageRequestDistributor(@RequestParam("method") String method,
                                            @RequestParam("data") @Nullable String data,
@@ -220,6 +221,7 @@ public class MissionController {
         String tag1 = (String) dataJson.get("tag1");
         String tag2 = (String) dataJson.get("tag2");
         String missionID = (String) dataJson.get("missionID");
+
         if (missionID != null) {
             return new JSONObject() {{
                 put("data", userService.showMissionById(missionID));

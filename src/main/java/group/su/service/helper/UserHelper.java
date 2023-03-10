@@ -1,9 +1,9 @@
 package group.su.service.helper;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import group.su.dao.MissionDao;
 import group.su.dao.UserDao;
-import group.su.dao.impl.MissionDaoImpl;
-import group.su.dao.impl.UserDaoImpl;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
 import org.bson.Document;
@@ -34,7 +34,6 @@ public class UserHelper {
         userAllInfo.remove("gender");
         userAllInfo.remove("month_performance");
         userAllInfo.remove("total_performance");
-
         return userAllInfo;
     }
 
@@ -67,5 +66,18 @@ public class UserHelper {
             }
         }};
     }
+
+    //通过openid查询 user是否存在
+    public Document queryUserInfoByKey(String openid){
+        Document userInfo = userDao.searchUserByInputEqual("openid",openid).first();
+        return userInfo;
+    }
+
+
+    //更新
+    public void updateUserKey(String s1,String s2 ){
+        userDao.updateInUser(s1,s1,s2, s2);
+    }
+
 
 }

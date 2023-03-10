@@ -24,6 +24,7 @@ public class MissionDaoImpl implements MissionDao {
         missionCollection.insertOne(document);
     }
 
+
     @Override
     public FindIterable<Document> showAll() {
         // 查询全部

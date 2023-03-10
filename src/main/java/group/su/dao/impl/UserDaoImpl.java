@@ -26,6 +26,7 @@ public class UserDaoImpl implements UserDao {
         return userCollection.find(filter);
     }
 
+
     @Override
     public <T> FindIterable<Document> searchUserByInputContain(String field, T value) {
         // 指定查询过滤器
@@ -52,9 +53,10 @@ public class UserDaoImpl implements UserDao {
         userCollection.updateOne(filter, update);
     }
 
+
+
     @Override
     public FindIterable<Document> searchAllUsers() {
-
         return userCollection.find();
     }
 

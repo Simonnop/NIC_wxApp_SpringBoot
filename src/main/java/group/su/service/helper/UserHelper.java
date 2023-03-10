@@ -67,17 +67,5 @@ public class UserHelper {
         }};
     }
 
-    //通过openid查询 user是否存在
-    public Document queryUserInfoByKey(String openid){
-        Document userInfo = userDao.searchUserByInputEqual("openid",openid).first();
-        return userInfo;
-    }
-
-
-    //更新
-    public void updateUserKey(String s1,String s2 ){
-        userDao.updateInUser(s1,s1,s2, s2);
-    }
-
 
 }

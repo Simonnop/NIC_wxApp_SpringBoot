@@ -44,7 +44,7 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
-        ArrayList<Document> documents = managerService.showMissionGotDraft();
+        ArrayList<Document> documents = managerService.showMissionGotDraftToTeacher();
 
         for (Document document : documents) {
             System.out.println(document);
@@ -53,6 +53,8 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void test() {
+
+        managerService.uploadArticleURL("2023010319","U202116999","https://www.bilibili.com");
 
         System.out.println(
                 missionHelper.showUserInfoInMission(

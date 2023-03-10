@@ -17,11 +17,16 @@ public interface ManagerService {
 
     ArrayList<Document> showMissionGotDraft();
 
+    ArrayList<Document> showMissionGotDraftToTeacher();
+
     ArrayList<String> findAvailableReporters(String missionID, Integer... intervals);
 
     Map<String, Integer> findAvailableTime(int week);
 
     void examineDraftByEditor(String missionID, String userid, String score,
+                              String comment, String... tags);
+
+    void examineDraftByTeacher(String missionID, String userid, String score,
                               String comment, String... tags);
 
     void saveLayoutFiles(MultipartFile file, String missionID, String userid);

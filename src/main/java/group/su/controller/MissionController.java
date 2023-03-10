@@ -84,6 +84,9 @@ public class MissionController {
                 case "showGotDraft":
                     result = showMissionGotDraft();
                     break;
+                case "DraftToTeacher":
+                    result = showMissionDraftToTeacher();
+                    break;
                 case "showByInput":
                     result = showMissionByInput(dataJson);
                     // 时间 状态 评分 标签
@@ -125,6 +128,14 @@ public class MissionController {
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject showMissionDraftToTeacher() {
+        return new JSONObject() {{
+            put("data", managerService.showMissionGotDraftToTeacher());
+            put("code", 302);
+            put("msg", "查询待辅导员审核稿件任务成功");
+        }};
     }
 
     private JSONObject uploadArticleURL(JSONObject dataJson) {

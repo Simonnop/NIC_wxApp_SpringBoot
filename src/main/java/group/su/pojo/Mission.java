@@ -20,8 +20,7 @@ public class Mission {
     String place;
     String title;
     String description;
-    String tag1;
-    String tag2;
+    Map<String, List<String>> tags = new HashMap<>();
     Map<String, String> status;
     Map<String, String> statusChanger;
     Map<String, Integer> reporterNeeds;

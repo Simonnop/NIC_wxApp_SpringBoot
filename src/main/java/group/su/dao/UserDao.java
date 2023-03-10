@@ -16,4 +16,8 @@ public interface UserDao {
     <T, K> void addToSetInUser(String filterField, T filterValue, String updateField, K updateValue);
 
     <T, K> void updateInUser(String filterField, T filterValue, String updateField, K updateValue);
+
+
+
+    FindIterable<Document> searchAllUsers();
 }

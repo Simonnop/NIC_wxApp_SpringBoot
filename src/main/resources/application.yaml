@@ -1,9 +1,10 @@
+server:
+  port: 8081
+
 spring:
-  data:
-    mongodb:
-      host: 1.15.118.125    #mongo-IP
-      port: 27017            #mongo-???
-      database: NIC       #mongo-????
+  servlet:
+    multipart:
+      max-file-size: 100MB
 
 
 

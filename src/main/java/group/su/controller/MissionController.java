@@ -9,6 +9,7 @@ import group.su.pojo.Mission;
 import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,9 +29,10 @@ public class MissionController {
         this.userService = userService;
     }
 
+
     @RequestMapping("/NIC/manage")
     public String manageRequestDistributor(@RequestParam("method") String method,
-                                           @RequestParam("data") String data,
+                                           @RequestParam("data") @Nullable String data,
                                            HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);
@@ -40,7 +42,22 @@ public class MissionController {
                     result = addMissionResponse(dataJson);
                     break;
                 case "getTag":
-                    result = getTagResponse(dataJson);
+                    result = getTagResponse();
+                    break;
+                case "examine":  // TODO 待测试
+                    result = examineMissionResponse(dataJson);
+                    break;
+                case "examineByTeacher":  // TODO 待测试
+                    result = examineMissionByTeacherResponse(dataJson);
+                    break;
+                case "delete":  // TODO 待测试
+                    result = deleteMissionResponse(dataJson);
+                    break;
+                case "alter":   // TODO 待测试
+                    result = alterMissionResponse(dataJson);
+                    break;
+                case "return":
+                    result = returnMissionResponse(dataJson);
                     break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
@@ -53,9 +70,11 @@ public class MissionController {
         return resultStr;
     }
 
+
+
     @RequestMapping("/NIC/show")
     public String showRequestDistributor(@RequestParam("method") String method,
-                                         @RequestParam("data") String data,
+                                         @RequestParam("data") @Nullable String data,
                                          HttpServletRequest req) throws UnsupportedEncodingException {
         JSONObject result = new JSONObject();
         JSONObject dataJson = JSONObject.parseObject(data);
@@ -69,6 +88,12 @@ public class MissionController {
                     break;
                 case "showGotDraft":
                     result = showMissionGotDraft();
+                    break;
+                case "DraftToTeacher":
+                    result = showMissionDraftToTeacher();
+                    break;
+                case "showNeedLayout":
+                    result = showMissionNeedLayout();
                     break;
                 case "showByInput":
                     result = showMissionByInput(dataJson);
@@ -99,6 +124,9 @@ public class MissionController {
                 case "quit":
                     result = quitMission(dataJson);
                     break;
+                case "uploadURL":
+                    result = uploadArticleURL(dataJson);
+                    break;
                 default:
                     throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
             }
@@ -108,6 +136,114 @@ public class MissionController {
         String resultStr = result.toJSONString();
         System.out.println(resultStr);
         return resultStr;
+    }
+
+    private JSONObject showMissionNeedLayout() {
+        return new JSONObject() {{
+            put("data", managerService.showMissionNeedLayout());
+            put("code", 302);
+            put("msg", "查询待排版任务成功");
+        }};
+    }
+
+    private JSONObject showMissionDraftToTeacher() {
+        return new JSONObject() {{
+            put("data", managerService.showMissionGotDraftToTeacher());
+            put("code", 302);
+            put("msg", "查询待辅导员审核稿件任务成功");
+        }};
+    }
+
+    private JSONObject uploadArticleURL(JSONObject dataJson) {
+        String missionID = String.valueOf(dataJson.get("missionID"));
+        String userid = String.valueOf(dataJson.get("userid"));
+        String url = String.valueOf(dataJson.get("url"));
+        managerService.uploadArticleURL(missionID, userid, url);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "URL上传成功");
+        }};
+    }
+
+    private JSONObject returnMissionResponse(JSONObject dataJson) {
+
+        String missionID = String.valueOf(dataJson.get("missionID"));
+        String userid = String.valueOf(dataJson.get("userid"));
+        String comment = String.valueOf(dataJson.get("comment"));
+        managerService.thrashBack(missionID, userid, comment);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "打回操作成功");
+        }};
+    }
+
+    private JSONObject alterMissionResponse(JSONObject dataJson) {
+
+        String missionID = String.valueOf(dataJson.get("missionID"));
+
+        int missionElement = Integer.parseInt(dataJson.get("element").toString());
+        String publisher = (String) dataJson.get("publisher");
+        // parseObject 参数要求是字符串
+        Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
+        mission.setElement(missionElement);
+
+        managerService.alterMission(missionID, mission, publisher);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "任务更改成功");
+        }};
+    }
+
+    private JSONObject deleteMissionResponse(JSONObject dataJson) {
+
+        String missionID = (String) dataJson.get("missionID");
+        managerService.deleteMission(missionID);
+
+        return new JSONObject() {{
+            put("code", 202);
+            put("msg", "任务删除成功");
+        }};
+    }
+
+    private JSONObject examineMissionByTeacherResponse(JSONObject dataJson) {
+
+        String userid = (String) dataJson.get("userid");
+        String missionID = (String) dataJson.get("missionID");
+        String stars = (String) dataJson.get("stars");
+        String comment = (String) dataJson.get("review");
+        String ddl = (String) dataJson.get("ddl");
+        String postscript = (String) dataJson.get("postscript");
+        String[] tags = dataJson.getObject("tag", String[].class);
+
+        if (userid == null || missionID == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        managerService.examineDraftByTeacher(missionID, userid, stars, comment, ddl, postscript, tags);
+
+        return new JSONObject() {{
+            put("code", 402);
+            put("msg", "提交审核成功");
+        }};
+    }
+
+    private JSONObject examineMissionResponse(JSONObject dataJson) {
+        String userid = (String) dataJson.get("userid");
+        String missionID = (String) dataJson.get("missionID");
+        String stars = (String) dataJson.get("stars");
+        String comment = (String) dataJson.get("review");
+        String[] tags = dataJson.getObject("tag", String[].class);
+        if (userid == null || missionID == null) {
+            throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
+        }
+        managerService.examineDraftByEditor(missionID, userid, stars, comment, tags);
+
+        return new JSONObject() {{
+            put("code", 402);
+            put("msg", "提交审核成功");
+        }};
     }
 
     private JSONObject takeMission(JSONObject dataJson) {
@@ -132,15 +268,25 @@ public class MissionController {
 
     private JSONObject showMissionByInput(JSONObject dataJson) {
 
+        String tag1 = (String) dataJson.get("tag1");
+        String tag2 = (String) dataJson.get("tag2");
         String missionID = (String) dataJson.get("missionID");
-        if (missionID == null) {
+
+        if (missionID != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionById(missionID));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else if (tag1 != null) {
+            return new JSONObject() {{
+                put("data", userService.showMissionByTag(tag1, tag2));
+                put("code", 302);
+                put("msg", "指定查询任务成功");
+            }};
+        } else {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        return new JSONObject() {{
-            put("data", userService.showMissionById(missionID));
-            put("code", 302);
-            put("msg", "指定查询任务成功");
-        }};
     }
 
     private JSONObject showAllMission() {
@@ -170,8 +316,12 @@ public class MissionController {
 
     private JSONObject addMissionResponse(JSONObject dataJson) {
 
-        int missionElement = Integer.parseInt((String) dataJson.get("element"));
+        int missionElement = Integer.parseInt(dataJson.get("element").toString());
         String publisher = (String) dataJson.get("publisher");
+        // 整理 tags 格式
+        String tags = dataJson.get("tags").toString().replace("\\", "");
+        dataJson.put("tags", JSONObject.parseObject(tags));
+
         // parseObject 参数要求是字符串
         Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
         mission.setElement(missionElement);
@@ -181,12 +331,16 @@ public class MissionController {
         return new JSONObject() {{
             put("code", 202);
             put("msg", "任务添加成功");
+            put("missionID", mission.getMissionID());
         }};
     }
 
-
-    private JSONObject getTagResponse(JSONObject dataJson) {
-        return new JSONObject();
+    private JSONObject getTagResponse() {
+        return new JSONObject() {{
+            put("code", 302);
+            put("msg", "查询tag成功");
+            put("data", userService.showTag());
+        }};
     }
 
 }

@@ -9,24 +9,21 @@ import group.su.dao.util.DataBaseUtil;
 import group.su.pojo.Mission;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
 
 @Repository
 public class MissionDaoImpl implements MissionDao {
 
-    @Resource
-    private MongoTemplate mongoTemplate;
-
     // 获取集合
-    MongoCollection<Document> missionCollection = mongoTemplate.getCollection("Mission");
+    static MongoCollection<Document> missionCollection = DataBaseUtil.getMongoDB().getCollection("Mission");
 
     @Override
     public void addMission(Mission mission) {
-        mongoTemplate.save(mission);
+        Document document = mission.changeToDocument();
+        missionCollection.insertOne(document);
     }
+
 
     @Override
     public FindIterable<Document> showAll() {
@@ -38,6 +35,13 @@ public class MissionDaoImpl implements MissionDao {
     public <T> FindIterable<Document> searchMissionByInput(String field, T value) {
         // 按字段查询
         Bson filter = Filters.eq(field, value);
+        return missionCollection.find(filter);
+    }
+
+    @Override
+    public <T> FindIterable<Document> searchMissionByInput(String field1, T value1, String field2, T value2) {
+        // 按字段查询
+        Bson filter = Filters.and(Filters.eq(field1,value1),Filters.eq(field2,value2));
         return missionCollection.find(filter);
     }
 
@@ -54,5 +58,17 @@ public class MissionDaoImpl implements MissionDao {
         Bson filter = Filters.eq(filterField, filterValue);
         Bson update = Updates.set(updateField, updateValue);
         missionCollection.updateOne(filter, update);
+    }
+
+    @Override
+    public <T> void replaceMission(String filterField, T filterValue, Document document) {
+        Bson filter = Filters.eq(filterField, filterValue);
+        missionCollection.findOneAndReplace(filter, document);
+    }
+
+    @Override
+    public <T> void deleteMissionByInput(String field, T value) {
+        Bson filter = Filters.eq(field, value);
+        missionCollection.deleteOne(filter);
     }
 }

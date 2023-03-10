@@ -8,6 +8,8 @@ public enum ExceptionKind {
     ALREADY_PARTICIPATE(403,"任务已接"),
     SOCKET_CONNECTION_ERROR(703,"与Socket通信异常"),
     NO_LESSONS_INFO(705,"未导入课程表信息"),
+    NO_SORT_KEY(704,"没有此排序键"),
+    WRONG_URL(405, "url不可用"),
     SAME_FILE_ERROR(501,"已含同名文件");
 
 

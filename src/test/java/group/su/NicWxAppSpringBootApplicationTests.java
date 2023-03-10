@@ -2,33 +2,55 @@ package group.su;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
+import com.mongodb.client.FindIterable;
+import group.su.dao.AffairDao;
+import group.su.dao.ConfigDao;
+import group.su.dao.LessonDao;
+import group.su.dao.MissionDao;
+import group.su.dao.impl.AffairDaoImpl;
 import group.su.dao.impl.MissionDaoImpl;
 import group.su.dao.impl.UserDaoImpl;
+import group.su.exception.AppRuntimeException;
+import group.su.exception.ExceptionKind;
+import group.su.pojo.Affair;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
+import group.su.service.UserService;
+import group.su.service.helper.MissionHelper;
+import group.su.service.helper.UserHelper;
+import group.su.service.util.TimeUtil;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
-import javax.annotation.Resource;
-import java.util.Optional;
+import java.text.Collator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 class NicWxAppSpringBootApplicationTests {
 
     @Autowired
     ManagerService managerService;
-
+    @Autowired
+    UserService userService;
     @Autowired
     UserDaoImpl userDao;
-
     @Autowired
     MissionDaoImpl missionDao;
-
-    @Resource
-    MongoTemplate mongoTemplate;
+    @Autowired
+    UserHelper userHelper;
+    @Autowired
+    MissionHelper missionHelper;
+    @Autowired
+    TimeUtil timeUtil;
+    @Autowired
+    ConfigDao configDao;
+    @Autowired
+    LessonDao lessonDao;
+    @Autowired
+    AffairDao affairDao;
 
     @Test
     void contextLoads() {
@@ -37,56 +59,23 @@ class NicWxAppSpringBootApplicationTests {
 
     @Test
     void get() {
+        Affair affair = new Affair("test", "三公", "2023-03-07", "12:00", "13:00");
+        affair.setPublisher("U202116999");
+        affair.setInvolveUsers(new ArrayList<String>(){{
+            add("U202111390");}});
+        affair.generateRandomID();
+        userService.addAffair(affair);
 
-        System.out.println(mongoTemplate.getCollection("User").find().first());
-/*
-        Mission mission = missionDao.findMissionById("1935121201");
+        System.out.println(userService.showAffairOnDate("U202111390", "2023-03-07"));
 
-        String missionString = JSONObject.toJSONString(mission);
+        affairDao.delete("affairID", affair.getAffairID());
 
-        System.out.println(missionString);
-
-        JSONObject jsonObject = JSONObject.parseObject(missionString);
-*/
-
-
+        System.out.println(userService.showAffairOnDate("U202111390", "2023-03-07"));
     }
 
     @Test
-    void addMission() {
-        JSONObject result = new JSONObject();
-        String data = "{\"place\": \"这里\"," +
-                      "\"title\": \"测试新字段\"," +
-                      "\"publisher\": \"U202116999\"," +
-                      "\"element\": \"1\"," +
-                      "\"description\": \"如题\"," +
-                      "\"time\": {\"year\": 1935,\"month\": 12,\"day\": 12,\"beginHour\": 12,\"beginMinute\": 0,\"endHour\": 13,\"endMinute\": 0}," +
-                      "\"reporterNeeds\": {\"photo\": 1,\"article\": 1}}";
+    void test() {
 
-        System.out.println(data);
-
-        try {
-
-            JSONObject dataJson = JSONObject.parseObject(data);
-
-            int missionElement = Integer.parseInt((String) dataJson.get("element"));
-            String publisher = (String) dataJson.get("publisher");
-            // parseObject 参数要求是字符串
-            Mission mission = JSONObject.parseObject(JSON.toJSONString(dataJson), Mission.class);
-            mission.setElement(missionElement);
-
-            managerService.addMission(mission, publisher);
-
-            result.put("code", 202);
-            result.put("msg", "任务添加成功");
-
-        } catch (Exception e) {
-            result.put("code", 203);
-            result.put("msg", "任务信息错误");
-            throw e;
-        } finally {
-            String resultStr = result.toJSONString();
-            System.out.println(resultStr);
-        }
+        System.out.println(managerService.showMissionGotDraft());
     }
 }

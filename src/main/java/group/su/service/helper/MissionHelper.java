@@ -5,10 +5,13 @@ import group.su.dao.MissionDao;
 import group.su.dao.UserDao;
 import group.su.dao.impl.MissionDaoImpl;
 import group.su.dao.impl.UserDaoImpl;
+import group.su.exception.AppRuntimeException;
+import group.su.exception.ExceptionKind;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,11 +21,13 @@ public class MissionHelper {
 
     final UserDao userDao;
     final MissionDao missionDao;
+    final UserHelper userHelper;
 
     @Autowired
-    public MissionHelper(UserDao userDao, MissionDao missionDao) {
+    public MissionHelper(UserDao userDao, MissionDao missionDao, UserHelper userHelper) {
         this.userDao = userDao;
         this.missionDao = missionDao;
+        this.userHelper = userHelper;
     }
 
     public void updateMissionStatus(String missionID) {
@@ -71,6 +76,52 @@ public class MissionHelper {
         }
         document.put("reporterLack", reporterLack);
 
+        return showUserInfoInMission(document);
+    }
+
+    public Document showUserInfoInMission(Document document) {
+
+        Document reporters = document.get("reporters", Document.class);
+        Document statusChanger = document.get("statusChanger", Document.class);
+
+        for (String kind : reporters.keySet()) {
+            if (reporters.getList(kind, String.class).isEmpty()) {
+                continue;
+            }
+            ArrayList<Document> tempDocument = new ArrayList<>();
+            reporters.getList(kind, String.class).forEach(
+                    (userid) -> tempDocument.add(userHelper.getUserInfoInMission("userid", userid)));
+            reporters.put(kind, tempDocument);
+        }
+        for (String kind : statusChanger.keySet()) {
+            String s = statusChanger.get(kind, String.class);
+            if (s == null || s.equals("")) {
+                continue;
+            }
+            if (s.startsWith("U")) {
+                statusChanger.put(kind, userHelper.getUserInfoInMission("userid", s));
+            } else {
+                statusChanger.put(kind, userHelper.getUserInfoInMission("username", s));
+            }
+
+        }
+
         return document;
+    }
+
+    public ArrayList<Document> findSimilarMission(String... tags) {
+
+        // TODO 改了结构,要重新写
+
+        FindIterable<Document> documents;
+        if (tags.length == 1) {
+            documents = missionDao.searchMissionByInput("tag1", tags[0]);
+        } else {
+            documents = missionDao.searchMissionByInput("tag1", tags[0], "tag2", tags[1]);
+        }
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        return this.changeFormAndCalculate(documents);
     }
 }

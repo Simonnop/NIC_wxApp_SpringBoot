@@ -1,12 +1,10 @@
 package group.su.service.impl;
 
 import com.mongodb.client.FindIterable;
-import group.su.dao.ConfigDao;
-import group.su.dao.LessonDao;
-import group.su.dao.MissionDao;
-import group.su.dao.UserDao;
+import group.su.dao.*;
 import group.su.exception.AppRuntimeException;
 import group.su.exception.ExceptionKind;
+import group.su.pojo.Affair;
 import group.su.pojo.Mission;
 import group.su.service.ManagerService;
 import group.su.service.helper.MissionHelper;
@@ -14,10 +12,15 @@ import group.su.service.util.TimeUtil;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.text.Collator;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -27,15 +30,17 @@ public class ManagerServiceImpl implements ManagerService {
     final ConfigDao configDao;
     final LessonDao lessonDao;
     final MissionHelper missionManager;
+    final AffairDao affairDao;
 
     @Autowired
     public ManagerServiceImpl(UserDao userDao, MissionDao missionDao, ConfigDao configDao,
-                           LessonDao lessonDao, MissionHelper missionManager) {
+                              LessonDao lessonDao, MissionHelper missionManager, AffairDao affairDao) {
         this.userDao = userDao;
         this.missionDao = missionDao;
         this.configDao = configDao;
         this.lessonDao = lessonDao;
         this.missionManager = missionManager;
+        this.affairDao = affairDao;
     }
 
     @Override
@@ -43,12 +48,33 @@ public class ManagerServiceImpl implements ManagerService {
         // 初始化任务id与状态
         mission.initializeMission();
         Map<String, String> statusChanger = mission.getStatusChanger();
-        statusChanger.put("发布任务", (String) userDao
-                        .searchUserByInputEqual("userid", userid).first()
-                        .get("username"));
+        statusChanger.put("发布任务", userid);
         mission.setStatusChanger(statusChanger);
         // 添加任务
         missionDao.addMission(mission);
+        // 创建事务
+        new Thread(() -> {
+            Affair affair = new Affair(mission);
+            affairDao.addAffair(affair);
+        });
+    }
+
+    @Override
+    public void deleteMission(String missionID) {
+
+        missionDao.deleteMissionByInput("missionID", missionID);
+    }
+
+    @Override
+    public void alterMission(String missionID, Mission mission, String publisher) {
+        mission.initializeMission();
+        Map<String, String> statusChanger = mission.getStatusChanger();
+        statusChanger.put("发布任务", publisher);
+        mission.setStatusChanger(statusChanger);
+        mission.setMissionID(missionID);
+
+        // 添加任务
+        missionDao.replaceMission("missionID", mission.getMissionID(), mission.changeToDocument());
     }
 
     @Override
@@ -64,6 +90,55 @@ public class ManagerServiceImpl implements ManagerService {
         documentArrayList.removeIf(document -> ((Document) document
                 .get("status"))
                 .get("写稿")
+                .equals("未达成")
+                || !(
+                ((Document) document
+                        .get("status"))
+                        .get("编辑部审稿")
+                        .equals("被打回")
+                        || ((Document) document
+                        .get("status"))
+                        .get("编辑部审稿")
+                        .equals("未达成")));
+        return documentArrayList;
+    }
+
+    @Override
+    public ArrayList<Document> showMissionGotDraftToTeacher() {
+        FindIterable<Document> documents = missionDao.showAll();
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        ArrayList<Document> documentArrayList = missionManager.changeFormAndCalculate(documents);
+
+        // 判断是否缺人
+        documentArrayList.removeIf(document -> ((Document) document
+                .get("status"))
+                .get("编辑部审稿")
+                .equals("未达成")
+                || !((Document) document
+                .get("status"))
+                .get("辅导员审核")
+                .equals("未达成"));
+        return documentArrayList;
+    }
+
+    @Override
+    public ArrayList<Document> showMissionNeedLayout() {
+        FindIterable<Document> documents = missionDao.showAll();
+        if (documents.first() == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        ArrayList<Document> documentArrayList = missionManager.changeFormAndCalculate(documents);
+
+        // 判断是否缺人
+        documentArrayList.removeIf(document -> ((Document) document
+                .get("status"))
+                .get("辅导员审核")
+                .equals("未达成")
+                || !((Document) document
+                .get("status"))
+                .get("排版")
                 .equals("未达成"));
         return documentArrayList;
     }
@@ -132,5 +207,244 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         return reportersList;
+    }
+
+    @Override
+    public Map<String, Integer> findAvailableTime(int week) {
+        Map<String, Integer> map = new HashMap<>();
+        // 看一天有多少节课
+        int size = configDao.showItemByInput("item", "timetable")
+                .first()
+                .getList(TimeUtil.getSeason(week), Document.class)
+                .size();
+        // 初始化 map
+        for (int day = 0; day < 7; day++) {
+            for (int i = 0; i < size; i++) {
+                map.put((day + 1) + "-" + (i + 1), 0);
+            }
+        }
+        // 遍历每个人的课表
+        for (Document document : lessonDao.showAll()) {
+            // 看每一天的课
+            for (int day = 0; day < 7; day++) {
+                List<Document> lessonOfDay = document.getList("lessons", Document.class)
+                        .get(week - 1)
+                        .getList("time", Document.class)
+                        .get(day)
+                        .getList("lesson", Document.class);
+                for (Document lessons : lessonOfDay) {
+                    // 获取课程是第几节
+                    String[] times = ((String) lessons.get("time")).split("-");
+                    for (int i = Integer.parseInt(times[0]); i <= Integer.parseInt(times[1]); i++) {
+                        String key = (day + 1) + "-" + i;
+                        map.put(key, map.get(key) + 1);
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public void examineDraftByEditor(String missionID, String userid, String score,
+                                     String comment, String... tags) {
+        Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
+        Mission mission = Mission.changeToMission(missionDoc);
+        /*// 判断日期
+        Date oldDate;
+        Date newDate;
+        try {
+            oldDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(mission.getDeadline());
+            newDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ddl);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        if (newDate.compareTo(oldDate) < 0) {
+            mission.setDeadline(ddl);
+        }
+        mission.setDeadline(ddl);*/
+        mission.getStatusChanger().put("编辑部审稿", userid);
+
+        mission.getComments().put(userid, comment);
+        mission.getDraftTags().addAll(Arrays.asList(tags));
+        mission.getScore().put(userid, Integer.valueOf(score));
+        mission.getStatus().put("编辑部审稿",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        Document document = mission.changeToDocument();
+        missionDao.replaceMission("missionID", missionID, document);
+    }
+
+    @Override
+    public void examineDraftByTeacher(String missionID, String userid, String score,
+                                      String comment, String deadline, String postscript, String... tags) {
+        Document missionDoc = missionDao.searchMissionByInput("missionID", missionID).first();
+        Mission mission = Mission.changeToMission(missionDoc);
+        /*// 判断日期
+        Date oldDate;
+        Date newDate;
+        try {
+            oldDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(mission.getDeadline());
+            newDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ddl);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        if (newDate.compareTo(oldDate) < 0) {
+            mission.setDeadline(ddl);
+        }
+        mission.setDeadline(ddl);*/
+        String username = userDao.searchUserByInputEqual("userid", userid)
+                .first()
+                .get("username", String.class);
+
+        mission.getStatusChanger().put("辅导员审核", userid);
+        mission.getComments().put(username, comment);
+        mission.getDraftTags().addAll(Arrays.asList(tags));
+        mission.getScore().put(username, Integer.valueOf(score));
+        mission.getPostscript().put(username, postscript);
+        mission.setDeadline(deadline);
+        mission.getStatus().put("辅导员审核",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        Document document = mission.changeToDocument();
+        missionDao.replaceMission("missionID", missionID, document);
+    }
+
+    @Override
+    public void saveLayoutFiles(MultipartFile file, String missionID, String userid) {
+
+        String fileName = missionID + "_layout_" + file.getOriginalFilename(); //获取上传文件原来的名称
+        String filePath = "C:\\ProgramData\\NIC\\work_files";
+        File temp = new File(filePath);
+        if (!temp.exists()) {
+            temp.mkdirs();
+        }
+
+        File localFile = new File(filePath + File.separator + fileName);
+        try {
+            file.transferTo(localFile); //把上传的文件保存至本地
+        } catch (IOException e) {
+            throw new AppRuntimeException(ExceptionKind.SAME_FILE_ERROR);
+        }
+        new Thread(() -> {
+            // 将文件名保存到对应的任务下
+            missionDao.addToSetInMission(
+                    "missionID", missionID,
+                    "layoutFiles", fileName);
+
+        });
+    }
+
+    @Override
+    public Map<String, ArrayList<Document>> getTotalStuffSortedByInput(String sortItem) {
+
+        FindIterable<Document> documents = userDao.searchAllUsers();
+        Comparator cmp;
+        String[] fields = {"username", "classStr", "tel", "QQ", "userid", "department"};
+        Class clazz;
+
+        switch (sortItem) {
+            case "username":
+                cmp = Collator.getInstance(Locale.CHINA);
+                clazz = String.class;
+                break;
+            case "innerId":
+                cmp = new Comparator<String>() {
+                    @Override
+                    public int compare(String code1, String code2) {
+                        return Integer.valueOf(code1).compareTo(Integer.valueOf(code2));
+                    }
+                };
+                clazz = Integer.class;
+                break;
+            default:
+                throw new AppRuntimeException(ExceptionKind.NO_SORT_KEY);
+        }
+
+        Map<String, ArrayList<Document>> NameIdMap = new TreeMap<String, ArrayList<Document>>(cmp) {{
+            for (Document document : documents) {
+
+                String item = String.valueOf(document.get(sortItem, clazz));
+
+                if (!containsKey(item)) {
+                    put(item, new ArrayList<>());
+                }
+                Document info = new Document() {{
+                    for (String field : fields
+                    ) {
+                        put(field, document.get(field));
+                    }
+                }};
+                get(item).add(info);
+            }
+        }};
+
+        return NameIdMap;
+    }
+
+    @Override
+    public void thrashBack(String comment, String userid, String missionID) {
+        Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+        if (document == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+        Mission mission = Mission.changeToMission(document);
+        Map<String, String> status = mission.getStatus();
+        String undo = "未达成";
+        if (status.get("编辑部审稿").equals(undo)) {
+            status.put("写稿", "被打回");
+        } else if (status.get("辅导员审核").equals(undo)) {
+            status.put("编辑部审稿", "被打回");
+        }
+        mission.getComments().put(
+                userDao.searchUserByInputEqual("userid", userid).first().get("username", String.class),
+                comment
+        );
+        missionDao.replaceMission("missionID", missionID, mission.changeToDocument());
+    }
+
+    @Override
+    public void uploadArticleURL(String missionID, String userid, String url) {
+
+        Document document = missionDao.searchMissionByInput("missionID", missionID).first();
+        if (document == null) {
+            throw new AppRuntimeException(ExceptionKind.DATABASE_NOT_FOUND);
+        }
+
+        // InputStream 继承了 AutoCloseable, try 后可以自动关闭
+        try (InputStream ignored = new URL(url).openStream()) {
+            ;
+        } catch (Exception e) {
+            throw new AppRuntimeException(ExceptionKind.WRONG_URL);
+        }
+
+        document.put("articleURL", url);
+        document.get("statusChanger", Document.class).put("排版", userid);
+        document.get("status", Document.class).put("排版",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        missionDao.replaceMission("missionID", missionID, document);
+    }
+
+    @Override
+    public Map<String, ArrayList<Map<String, String>>> getTotalStuffGroupedByInput(String groupItem) {
+
+        FindIterable<Document> documents = userDao.searchAllUsers();
+
+        Map<String, ArrayList<Map<String, String>>> map = new HashMap<>();
+
+        for (Document document : documents
+        ) {
+            String item = document.get(groupItem, String.class);
+            if (!map.containsKey(item)) {
+                map.put(item, new ArrayList<>());
+            }
+            map.get(item).add(new HashMap<String, String>() {{
+                put("username", document.get("username", String.class));
+                put("userid", document.get("userid", String.class));
+                put("class", document.get("classStr", String.class));
+                put("identity", document.get("identity", String.class));
+                put("department", document.get("department", String.class));
+            }});
+        }
+
+        return map;
     }
 }

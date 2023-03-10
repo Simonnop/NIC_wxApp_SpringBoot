@@ -8,6 +8,7 @@ import group.su.exception.ExceptionKind;
 import group.su.pojo.Mission;
 import group.su.service.impl.ManagerServiceImpl;
 import group.su.service.impl.UserServiceImpl;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 @RestController
 public class MissionController {
@@ -46,9 +48,6 @@ public class MissionController {
                     break;
                 case "examine":  // TODO 待测试
                     result = examineMissionResponse(dataJson);
-                    break;
-                case "examineByTeacher":  // TODO 待测试
-                    result = examineMissionByTeacherResponse(dataJson);
                     break;
                 case "delete":  // TODO 待测试
                     result = deleteMissionResponse(dataJson);
@@ -87,10 +86,7 @@ public class MissionController {
                     result = showNeedMission();
                     break;
                 case "showGotDraft":
-                    result = showMissionGotDraft();
-                    break;
-                case "DraftToTeacher":
-                    result = showMissionDraftToTeacher();
+                    result = showMissionGotDraft(dataJson);
                     break;
                 case "showNeedLayout":
                     result = showMissionNeedLayout();
@@ -208,37 +204,31 @@ public class MissionController {
         }};
     }
 
-    private JSONObject examineMissionByTeacherResponse(JSONObject dataJson) {
+    private JSONObject examineMissionResponse(JSONObject dataJson) {
+
+        String kind = (String) dataJson.get("kind");
 
         String userid = (String) dataJson.get("userid");
         String missionID = (String) dataJson.get("missionID");
         String stars = (String) dataJson.get("stars");
         String comment = (String) dataJson.get("review");
+
         String ddl = (String) dataJson.get("ddl");
         String postscript = (String) dataJson.get("postscript");
+
         String[] tags = dataJson.getObject("tag", String[].class);
 
-        if (userid == null || missionID == null) {
+        if (userid == null || missionID == null || kind == null) {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        managerService.examineDraftByTeacher(missionID, userid, stars, comment, ddl, postscript, tags);
 
-        return new JSONObject() {{
-            put("code", 402);
-            put("msg", "提交审核成功");
-        }};
-    }
-
-    private JSONObject examineMissionResponse(JSONObject dataJson) {
-        String userid = (String) dataJson.get("userid");
-        String missionID = (String) dataJson.get("missionID");
-        String stars = (String) dataJson.get("stars");
-        String comment = (String) dataJson.get("review");
-        String[] tags = dataJson.getObject("tag", String[].class);
-        if (userid == null || missionID == null) {
+        if (kind.equals("editor")) {
+            managerService.examineDraftByEditor(missionID, userid, stars, comment, tags);
+        } else if (kind.equals("teacher")) {
+            managerService.examineDraftByTeacher(missionID, userid, stars, comment, ddl, postscript, tags);
+        } else {
             throw new AppRuntimeException(ExceptionKind.REQUEST_INFO_ERROR);
         }
-        managerService.examineDraftByEditor(missionID, userid, stars, comment, tags);
 
         return new JSONObject() {{
             put("code", 402);
@@ -303,12 +293,23 @@ public class MissionController {
             put("code", 302);
             put("msg", "全部缺人任务成功");
         }};
-
     }
 
-    private JSONObject showMissionGotDraft() {
+    private JSONObject showMissionGotDraft(JSONObject dataJson) {
+
+        String kind = (String) dataJson.get("kind");
+
         return new JSONObject() {{
-            put("data", managerService.showMissionGotDraft());
+
+            ArrayList<Document> documents = new ArrayList<>();
+
+            if (kind.equals("editor")) {
+                documents = managerService.showMissionGotDraft();
+            } else if (kind.equals("teacher")) {
+                documents = managerService.showMissionGotDraftToTeacher();
+            }
+
+            put("data", documents);
             put("code", 302);
             put("msg", "查询已有稿件任务成功");
         }};

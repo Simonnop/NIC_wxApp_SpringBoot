@@ -263,11 +263,16 @@ public class ManagerServiceImpl implements ManagerService {
             mission.setDeadline(ddl);
         }
         mission.setDeadline(ddl);*/
+        String username = userDao.searchUserByInputEqual("userid", userid)
+                .first()
+                .get("username", String.class);
+
         mission.getStatusChanger().put("编辑部审稿", userid);
 
-        mission.getComments().put(userid, comment);
+        mission.getComments().get("editor").put(username, comment);
+
         mission.getDraftTags().addAll(Arrays.asList(tags));
-        mission.getScore().put(userid, Integer.valueOf(score));
+        mission.getScore().put(username, Integer.valueOf(score));
         mission.getStatus().put("编辑部审稿",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         Document document = mission.changeToDocument();
@@ -297,7 +302,9 @@ public class ManagerServiceImpl implements ManagerService {
                 .get("username", String.class);
 
         mission.getStatusChanger().put("辅导员审核", userid);
-        mission.getComments().put(username, comment);
+
+        mission.getComments().get("teacher").put(username, comment);
+
         mission.getDraftTags().addAll(Arrays.asList(tags));
         mission.getScore().put(username, Integer.valueOf(score));
         mission.getPostscript().put(username, postscript);
@@ -388,16 +395,22 @@ public class ManagerServiceImpl implements ManagerService {
         }
         Mission mission = Mission.changeToMission(document);
         Map<String, String> status = mission.getStatus();
+        Map<String, Map<String, String>> comments = mission.getComments();
+
         String undo = "未达成";
+        String username = userDao.searchUserByInputEqual("userid", userid)
+                .first()
+                .get("username", String.class);
+
         if (status.get("编辑部审稿").equals(undo)) {
             status.put("写稿", "被打回");
+            comments.get("editor").put(username, comment);
+
         } else if (status.get("辅导员审核").equals(undo)) {
             status.put("编辑部审稿", "被打回");
+            comments.get("teacher").put(username, comment);
         }
-        mission.getComments().put(
-                userDao.searchUserByInputEqual("userid", userid).first().get("username", String.class),
-                comment
-        );
+
         missionDao.replaceMission("missionID", missionID, mission.changeToDocument());
     }
 

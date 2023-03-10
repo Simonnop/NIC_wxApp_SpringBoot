@@ -81,16 +81,16 @@
 
 <!--        微信使用的加密算法-->
         <!-- https://mvnrepository.com/artifact/com.scottyab/aes-crypto -->
-        <dependency>
-            <groupId>com.scottyab</groupId>
-            <artifactId>aes-crypto</artifactId>
-            <version>0.0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.scottyab</groupId>-->
+<!--            <artifactId>aes-crypto</artifactId>-->
+<!--            <version>0.0.5</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.bouncycastle</groupId>-->
+<!--            <artifactId>bcprov-jdk16</artifactId>-->
+<!--            <version>1.46</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

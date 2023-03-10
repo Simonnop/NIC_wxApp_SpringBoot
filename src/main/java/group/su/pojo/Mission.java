@@ -31,7 +31,10 @@ public class Mission {
     ArrayList<String> layoutFiles = new ArrayList<>();  // 排版文件
     Map<String, Integer> score = new HashMap<>();  // 分数
     ArrayList<String> draftTags = new ArrayList<>();  // 稿件的tag
-    Map<String, String> comments = new HashMap<>(); // 评论
+    Map<String, Map<String, String>> comments = new HashMap<String, Map<String, String>>(){{
+        put("editor", new HashMap<>());
+        put("teacher", new HashMap<>());
+    }}; // 评论
     Map<String, String> postscript = new HashMap<>(); // 备注
     String deadline;  // 下一任务的ddl
 

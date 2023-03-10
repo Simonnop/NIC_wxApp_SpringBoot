@@ -41,4 +41,11 @@ public interface UserService {
     List<Document> showAllAffairs(String userid);
 
     void deleteAffair(String affairID);
+
+    Document queryUserInfoByKey(String openid);
+
+    void updateUserKey(String s1,String s2 );
+
+    Document getAppconfig();
+
 }

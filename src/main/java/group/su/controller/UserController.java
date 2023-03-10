@@ -51,14 +51,12 @@ public class UserController {
                                             HttpServletRequest req) throws IOException {
 
         if (code != null) {
+            Document appconfig = userService.getAppconfig();
             String url = "https://api.weixin.qq.com/sns/jscode2session?";
-//        （这里写的是lyp的appid  appSecret  ）
-            String appid = "wx056074cf754d7323";
-            String appSecret = "a3c9ad9505ef30f8f6c169ed76260e8e";
-            url += "appid=" + appid;
-            url += "&secret=" + appSecret;
+            url += "appid=" + appconfig.get("appid");
+            url += "&secret=" + appconfig.get("appsecret");
             url += "&js_code=" + code;
-            url += "&grant_type=authorization_cosde";
+            url += "&grant_type=authorization_code";
 //              执行get请求.
             CloseableHttpResponse response = HttpClients.createDefault().execute(new HttpGet(url));
 //              获取响应实体
@@ -78,19 +76,19 @@ public class UserController {
             System.out.println("session_key:  "+session_key);
 
             //查询用户是否存在
-            Document user = userHelper.queryUserInfoByKey(openid);
+            Document user = userService.queryUserInfoByKey(openid);
             if (user == null) {
                 //此用户不存在或者是新用户
                 if(useridOfNewUser!=null){
                     //新用户，绑定openid以及session_key
-                    userHelper.updateUserKey(useridOfNewUser,openid);
-                    userHelper.updateUserKey(useridOfNewUser,session_key);
+                    userService.updateUserKey(useridOfNewUser,openid);
+                    userService.updateUserKey(useridOfNewUser,session_key);
                     return WxloginOfNewUserLogin().toJSONString();
                 }
                  return WxloginOfNewUser().toJSONString();
             }else{
                 //更新session_key
-                userHelper.updateUserKey(openid,session_key);
+                userService.updateUserKey(openid,session_key);
                 String userid = user.getString("userid");
                 String password = user.getString("password");
                 return WxloginOfOldUser(userid,password).toJSONString();
